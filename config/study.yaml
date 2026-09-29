@@ -1,0 +1,20 @@
+# Study period, bbox and paths. bbox covers the recommended, corrected
+# corridor (Hawthorne TS <-> Poste Masson / Poste de l'Interconnexion-
+# Maclaren) verified in docs/DATA_SOURCES.md -- NOT the shorter Poste Vignan
+# assumption from the initial (tag-matching-only) research pass.
+# period is a short window inside the HRDPS archive (starts 2026-07-09) for
+# fast iteration; widen once the pipeline is stable.
+period:
+  start: "2026-09-15"
+  end: "2026-09-18"
+bbox:
+  min_lon: -75.65
+  min_lat: 45.35
+  max_lon: -75.35
+  max_lat: 45.60
+weather:
+  source: hrdps
+paths:
+  data_dir: data
+  cache_dir: .cache
+  output_dir: output

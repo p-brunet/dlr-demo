@@ -1,0 +1,68 @@
+line_name: Hawthorne TS <-> Poste Masson / Poste de l'Interconnexion-Maclaren
+operator: Hydro One / Hydro-Quebec
+osm_way_ids:
+- 535370792
+- 535370788
+- 76734037
+- 702958168
+- 702958169
+- 702958170
+- 702958171
+- 702958172
+- 702958173
+- 702958174
+- 702958175
+- 702958176
+- 702958177
+- 702958178
+- 702958180
+- 702958181
+- 702958182
+- 702958199
+- 702958200
+- 702958201
+- 998555311
+- 998555312
+- 998555313
+- 998555314
+- 998555315
+- 998555316
+- 998555317
+- 998555318
+- 87817195
+official_geometry_path: null
+conductor:
+  name: TBD
+  diameter_m:
+    value: 0.0
+    source: user_provided
+    reference: placeholder
+  resistance_dc_20c_ohm_per_m:
+    value: 0.0
+    source: user_provided
+    reference: placeholder
+  absorptivity:
+    value: 0.8
+    source: industry_typical
+    reference: CIGRE TB 601 typical value
+  emissivity:
+    value: 0.8
+    source: industry_typical
+    reference: CIGRE TB 601 typical value
+  max_operating_temp_c:
+    value: 75.0
+    source: industry_typical
+    reference: typical ACSR continuous rating
+  static_rating_a: null
+spans: []
+notes: 'Corrected during Milestone 1 execution: initial tag-based cross-validation
+  (D5A/H9A refs matching IESO zone names) pointed at Poste Vignan (~4km from Hawthorne
+  TS) as the QC endpoint, but direct geometry tracing of the ref-tagged OSM ways showed
+  the corridor actually runs ~17km northeast to Poste Masson / Poste de l''Interconnexion-Maclaren
+  near Masson-Angers/Thurso, QC. The A41T/A42T circuits (also Hydro One, 230kV) run
+  in the same corridor and likely share the same right-of-way but are not included
+  in this geometry (kept as a documented parallel circuit, not this candidate''s primary
+  pair). D5A (230kV) and H9A (115kV) are combined on many way segments but mapped
+  as separate parallel ways for part of the corridor; the stored geometry/length uses
+  only D5A-bearing ways (primary_ref) to avoid double-counting the shared right-of-way
+  -- see docs/DATA_SOURCES.md for the length comparison.'
