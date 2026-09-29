@@ -1,0 +1,59 @@
+[project]
+name = "dlr"
+version = "0.1.0"
+description = "Dynamic Line Rating demonstrator for a real Ontario-Quebec transmission line"
+authors = [
+    { name = "pbrunet", email = "paul.brunet@artelys.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.5.5",
+    "dynamical-catalog>=1",
+    "geopandas>=1.1.4",
+    "httpx>=0.28.1",
+    "icechunk>=2.2.2",
+    "laspy[lazrs]>=2.7.0",
+    "linerate>=5.0.0",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.3",
+    "pandas>=3.0.6",
+    "pyarrow>=25.0.1",
+    "pydantic>=2.13.5",
+    "pyogrio>=0.13.0",
+    "pyproj>=3.8.0",
+    "pyyaml>=6.0.3",
+    "rasterio>=1.5.1",
+    "shapely>=2",
+    "typer>=0.27.2",
+    "xarray>=2026.7.0",
+    "zarr>=3",
+]
+
+[project.scripts]
+dlr = "dlr.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11.26,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "ruff>=0.16.8",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = [
+    "B008",  # typer.Option(...)/typer.Argument(...) in defaults is the documented typer pattern
+]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true

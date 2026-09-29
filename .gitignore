@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project-specific: raw/cached downloads are large and reproducible from
+# src/dlr/*; only processed, reviewable outputs (data/processed/) are tracked.
+data/raw/
+output/
+
