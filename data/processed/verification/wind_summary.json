@@ -1,0 +1,106 @@
+{
+  "station": "OTTAWA CDA RCS (CXOA), 8.9 km from the line",
+  "period": [
+    "2026-09-15 06:00:00",
+    "2026-10-14 00:00:00"
+  ],
+  "hours": 593,
+  "minutes": 35278,
+  "weather_skill": {
+    "1-6 h": {
+      "speed_vs_60min_mean": {
+        "n": 588,
+        "bias": -0.149,
+        "mae": 0.862
+      },
+      "speed_vs_2min_snapshot": {
+        "n": 588,
+        "bias": -0.152,
+        "mae": 0.951
+      },
+      "speed_vs_60min_mean_low_wind": {
+        "n": 222,
+        "bias": 0.517,
+        "mae": 0.886
+      },
+      "direction_mae_vs_60min_mean": 14.5,
+      "direction_mae_vs_2min_snapshot": 18.7
+    },
+    "7-24 h": {
+      "speed_vs_60min_mean": {
+        "n": 1764,
+        "bias": -0.155,
+        "mae": 0.887
+      },
+      "speed_vs_2min_snapshot": {
+        "n": 1764,
+        "bias": -0.158,
+        "mae": 0.985
+      },
+      "speed_vs_60min_mean_low_wind": {
+        "n": 666,
+        "bias": 0.541,
+        "mae": 0.907
+      },
+      "direction_mae_vs_60min_mean": 14.7,
+      "direction_mae_vs_2min_snapshot": 18.8
+    },
+    "25-48 h": {
+      "speed_vs_60min_mean": {
+        "n": 2352,
+        "bias": -0.094,
+        "mae": 0.905
+      },
+      "speed_vs_2min_snapshot": {
+        "n": 2352,
+        "bias": -0.098,
+        "mae": 1.009
+      },
+      "speed_vs_60min_mean_low_wind": {
+        "n": 888,
+        "bias": 0.612,
+        "mae": 0.96
+      },
+      "direction_mae_vs_60min_mean": 16.9,
+      "direction_mae_vs_2min_snapshot": 19.9
+    }
+  },
+  "direction_spread_median_deg": {
+    "(0.0, 1.0]": 14.9,
+    "(1.0, 2.0]": 12.6,
+    "(2.0, 3.0]": 10.5,
+    "(3.0, 5.0]": 8.9,
+    "(5.0, 30.0]": 7.6
+  },
+  "effective_over_vector": {
+    "median": 1.045,
+    "p5": 1.002,
+    "p95": 1.17,
+    "median_low_wind": 1.06,
+    "median_high_wind": 1.039,
+    "median_10min_blocks": 1.0
+  },
+  "fitted_floor_deg": {
+    "all_hours": 9.0,
+    "low_wind": 13.0,
+    "high_wind": 7.6,
+    "all_hours_10min_blocks": 0.0
+  },
+  "station_margin": {
+    "snapshot": {
+      "mae_rel": 0.0693,
+      "bias_rel": 0.0131,
+      "margin_98": 0.231,
+      "margin_98_low_wind": 0.266,
+      "bias_rel_low_wind": 0.0582
+    },
+    "effective": {
+      "mae_rel": 0.0833,
+      "bias_rel": -0.0463,
+      "margin_98": 0.161,
+      "margin_98_low_wind": 0.198,
+      "bias_rel_low_wind": -0.0062
+    }
+  },
+  "notes": "one station 8.9 km from the line at 10 m (urban edge); in-sample (no train/test split) because only ~4 weeks of minute data exist"
+}
