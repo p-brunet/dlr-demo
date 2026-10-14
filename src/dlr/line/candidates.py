@@ -3,7 +3,7 @@
 Every candidate's route is an explicit, ordered list of OSM way ids, including
 untagged "bridge" ways: twice in this project the way that actually crosses the
 Ottawa River carried no `ref`/`operator` tag, and inferring the route from
-`ref` tags silently dropped it (see docs/PLAN.md §5 and §8). `select_line`
+`ref` tags silently dropped it (see docs/METHODOLOGY.md). `select_line`
 validates that the assembled route is connected and reaches both substations,
 so a missing bridge way now fails loudly instead.
 """
@@ -73,7 +73,7 @@ CANDIDATES: dict[str, LineCandidate] = {
             "Hydro One 230 kV double circuit A41T/A42T from Hawthorne TS to "
             "Hydro-Quebec's Outaouais back-to-back HVDC converter (2 x 625 MW). "
             "Selected 2026-10-13 over D5A/H9A, which are radial ties with no "
-            "flow (docs/ROADMAP.md §2). The transfer limit under N-0 is the "
+            "flow (docs/METHODOLOGY.md). The transfer limit under N-0 is the "
             "converter, not the line's thermal rating."
         ),
     ),
@@ -130,7 +130,7 @@ CANDIDATES: dict[str, LineCandidate] = {
             87817195,
         ],
         notes=(
-            "Superseded 2026-10-13 (M1 candidate). D5A (230 kV) and H9A (115 kV) "
+            "Superseded 2026-10-13 (first candidate). D5A (230 kV) and H9A (115 kV) "
             "are radial interconnection points that carried 0 MW on every "
             "sampled day. The untagged crossing way 87817195 ends at Poste "
             "Masson, not Interconnexion-Maclaren. The ways are fragmented (D5A "

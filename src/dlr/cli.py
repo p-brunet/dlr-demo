@@ -220,9 +220,11 @@ def publish(port: int = typer.Option(8000, help="Local port for the preview serv
 
 @app.command("blog-sync")
 def blog_sync(
-    blog: Path = typer.Option(Path("../my-blog"), help="Local clone of p-brunet/my-blog."),
+    blog: Path = typer.Option(
+        Path("../my-blog"), help="Local clone of the blog repo (p-brunet/p-brunet.github.io)."
+    ),
 ) -> None:
-    """Copy the post draft and its figures into a local my-blog clone (no git operations)."""
+    """Copy the post draft into a local clone of the blog (no git operations)."""
     from dlr.export.blog import sync
 
     for path in sync(blog):

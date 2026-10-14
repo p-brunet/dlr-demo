@@ -28,5 +28,5 @@ osm_timestamp: '2026-10-13T15:36:13Z'
 verified_on: '2026-10-13'
 notes: Hydro One 230 kV double circuit A41T/A42T from Hawthorne TS to Hydro-Quebec's
   Outaouais back-to-back HVDC converter (2 x 625 MW). Selected 2026-10-13 over D5A/H9A,
-  which are radial ties with no flow (docs/ROADMAP.md §2). The transfer limit under
+  which are radial ties with no flow (docs/METHODOLOGY.md). The transfer limit under
   N-0 is the converter, not the line's thermal rating.

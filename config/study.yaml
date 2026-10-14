@@ -1,11 +1,10 @@
-# Study period, bbox and paths. bbox covers the A41T/A42T corridor
-# (Hawthorne TS <-> Poste de l'Outaouais, 45.39N-45.60N) with a margin, and
-# reaches south-west to the two verification stations (Ottawa Intl A at
-# 45.317N -75.667W, Ottawa Gatineau A at 45.522N -75.564W). The northern edge
-# was 45.60 before 2026-10-13 and cut through Poste de l'Outaouais. Still a
-# single native HRDPS spatial chunk.
-# period is the short thin-slice window used to run M2 -> M4 end to end
-# before widening to the full HRDPS archive (starts 2026-07-09).
+# Study area, a short test period and paths.
+# bbox covers the A41T/A42T corridor (Hawthorne TS <-> Poste de l'Outaouais,
+# 45.39N-45.60N) with a margin, and reaches south-west to the two verification
+# stations (Ottawa Intl A, 45.317N -75.667W; Ottawa Gatineau A, 45.522N
+# -75.564W). It fits in a single native HRDPS spatial chunk.
+# period is only used by `dlr fetch --no-dry-run --period-only` for a quick
+# local test; the pipeline itself uses every HRDPS run since 2026-07-09.
 period:
   start: "2026-09-15"
   end: "2026-09-18"

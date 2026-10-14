@@ -27,7 +27,7 @@ def span_model_figure(
     spans: gpd.GeoDataFrame,
     towers: gpd.GeoDataFrame,
     river: list,
-    out: Path = FIGURES_DIR / "m2_span_model.png",
+    out: Path = FIGURES_DIR / "span_model.png",
 ) -> Path:
     """Map of spans coloured by exposure index + ground/tower-top profile."""
     style.apply()
@@ -150,7 +150,7 @@ def _label_end(ax, x, y, text: str, dy: float = 0.0) -> None:
 
 
 def ratings_week_figure(
-    line_df, start: str, end: str, out: Path = FIGURES_DIR / "m4_ratings_week.png"
+    line_df, start: str, end: str, out: Path = FIGURES_DIR / "ratings_week.png"
 ) -> Path:
     """One week of hourly line ratings (MW per circuit): static, AAR, DLR."""
     import pandas as pd
@@ -186,7 +186,7 @@ def ratings_week_figure(
 
 
 def ratio_distribution_figure(
-    line_df, ratings, out: Path = FIGURES_DIR / "m4_ratio_distribution.png"
+    line_df, ratings, out: Path = FIGURES_DIR / "ratio_distribution.png"
 ) -> Path:
     """Cumulative distribution of line rating / static rating for each tier."""
     import numpy as np
@@ -223,7 +223,7 @@ def bottleneck_map_figure(
     spans: gpd.GeoDataFrame,
     line_df,
     river: list,
-    out: Path = FIGURES_DIR / "m4_bottleneck_spans.png",
+    out: Path = FIGURES_DIR / "bottleneck_spans.png",
 ) -> Path:
     """Spans coloured by the share of hours they limit the whole line."""
     style.apply()
@@ -278,7 +278,7 @@ def bottleneck_map_figure(
 def rating_skill_figure(
     skill: pd.DataFrame,
     point_skill: pd.DataFrame,
-    out: Path = FIGURES_DIR / "m5_rating_skill.png",
+    out: Path = FIGURES_DIR / "rating_skill.png",
 ) -> Path:
     """Rating error by lead: forecast vs persistence (pseudo-analysis), and station point check."""
     style.apply()
@@ -320,7 +320,7 @@ def secure_week_figure(
     week: pd.DataFrame,
     start: str,
     end: str,
-    out: Path = FIGURES_DIR / "m5_secure_dayahead_week.png",
+    out: Path = FIGURES_DIR / "secure_dayahead_week.png",
 ) -> Path:
     """A test-period week: reference DLR, day-ahead forecast, secure forecasts, static (MW)."""
     style.apply()
@@ -354,7 +354,7 @@ def secure_week_figure(
 
 
 def station_weather_figure(
-    weather: pd.DataFrame, out: Path = FIGURES_DIR / "m5_station_weather_skill.png"
+    weather: pd.DataFrame, out: Path = FIGURES_DIR / "station_weather_skill.png"
 ) -> Path:
     """Small multiples: temperature and wind MAE by lead, per station."""
     style.apply()
@@ -446,7 +446,7 @@ def render_all() -> list[Path]:
 
 
 def wind_direction_spread_figure(
-    hourly: pd.DataFrame, out: Path = FIGURES_DIR / "m5_wind_direction_spread.png"
+    hourly: pd.DataFrame, out: Path = FIGURES_DIR / "wind_direction_spread.png"
 ) -> Path:
     """Intra-hour spread of 1-minute wind directions vs hourly mean speed (CXOA)."""
     import numpy as np
@@ -485,7 +485,7 @@ def wind_direction_spread_figure(
 def wind_floor_fit_figure(
     curves: pd.DataFrame,
     fitted_deg: float,
-    out: Path = FIGURES_DIR / "m5_wind_floor_fit.png",
+    out: Path = FIGURES_DIR / "wind_floor_fit.png",
 ) -> Path:
     """Hourly-vector line rating ÷ minute-resolved rating as the attack-angle floor grows."""
     style.apply()

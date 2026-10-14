@@ -9,7 +9,7 @@ description: >
   built only from open weather forecasts, LiDAR terrain and OpenStreetMap — and why
   the static rating it is compared against turns out to be optimistic almost a third
   of the time.
-thumbnail: "https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/m4_bottleneck_spans.png"
+thumbnail: "https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/bottleneck_spans.png"
 tags:
   - energy
   - visualization
@@ -100,12 +100,12 @@ A line is only as strong as its weakest span, so the rating is computed for all
 ::::{grid} 1 1 2 2
 
 :::{card} Terrain and tower heights
-![Span model](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/m2_span_model.png)
+![Span model](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/span_model.png)
 The LiDAR surface model even "sees" the towers: 26–87 m above ground, tallest at the river crossing.
 :::
 
 :::{card} Where the bottleneck sits
-![Weakest-span map](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/m4_bottleneck_spans.png)
+![Weakest-span map](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/bottleneck_spans.png)
 95 of the 110 spans are the limiting one at some hour.
 :::
 
@@ -136,11 +136,11 @@ inherit the same optimistic wind.
 ::::{grid} 1 1 2 2
 
 :::{card} One week in August
-![Ratings over a week](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/m4_ratings_week.png)
+![Ratings over a week](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/ratings_week.png)
 :::
 
 :::{card} How often each rating beats static
-![Distribution](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/m4_ratio_distribution.png)
+![Distribution](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/ratio_distribution.png)
 :::
 
 ::::
@@ -166,7 +166,7 @@ at leads of 1 to 48 hours:
   resulting **"secure" rating above the true one in only 1 % of September–October
   hours** — the static rating did so 19 % of the time.
 
-![Day-ahead forecasts](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/m5_secure_dayahead_week.png)
+![Day-ahead forecasts](https://raw.githubusercontent.com/p-brunet/dlr-demo/main/docs/figures/secure_dayahead_week.png)
 
 The secure rating isn't much higher than static on average (0.95× to 1.04×
 depending on the wind-direction treatment). Its value is *when* it differs: it

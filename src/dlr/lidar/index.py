@@ -1,6 +1,6 @@
 """Query NRCan's CanElevation LiDAR project index by bounding box.
 
-Uses the public ESRI REST layer confirmed live during Milestone 1 research
+Uses the public ESRI REST layer (checked live in September 2026)
 (no API key, no sign-request needed) rather than downloading the full
 448MB tile-index GeoPackage for a simple bbox lookup.
 """

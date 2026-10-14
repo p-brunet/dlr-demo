@@ -1,4 +1,6 @@
-"""Sync the blog post into a local clone of p-brunet/my-blog (files only, no git).
+"""Sync the blog post into a local clone of the blog (files only, no git).
+
+The blog is https://p-brunet.github.io/ (repo p-brunet/p-brunet.github.io).
 
 The post draft lives in this repo (`docs/blog/`) and references its figures by
 `raw.githubusercontent.com` URLs on this repo, like the other posts. `sync`:
@@ -16,7 +18,7 @@ from pathlib import Path
 POST_SOURCE = Path("docs/blog/dlr-ottawa-outaouais.md")
 POST_SLUG = "dlr-ottawa-outaouais"
 RAW = "https://raw.githubusercontent.com/p-brunet/dlr-demo/main"
-THUMBNAIL = f"{RAW}/docs/figures/m4_bottleneck_spans.png"
+THUMBNAIL = f"{RAW}/docs/figures/bottleneck_spans.png"
 CARD_DATE = "October 2026"
 CRLF, LF = "\r\n", "\n"
 
@@ -104,7 +106,7 @@ def _add_sources(page: Path) -> bool:
 
 def sync(blog: Path) -> list[Path]:
     if not (blog / "myst.yml").exists():
-        raise FileNotFoundError(f"{blog} does not look like a my-blog clone (no myst.yml)")
+        raise FileNotFoundError(f"{blog} does not look like a blog clone (no myst.yml)")
     written = []
     target = blog / "posts" / f"{POST_SLUG}.md"
     _write_like(target, POST_SOURCE.read_text(encoding="utf-8"))

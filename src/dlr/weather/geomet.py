@@ -1,6 +1,6 @@
 """Hourly station observations from ECCC's MSC GeoMet OGC API (`climate-hourly`).
 
-Used as the weather "truth" for forecast verification (M5). Records carry an
+Used as the weather "truth" for forecast verification. Records carry an
 explicit `UTC_DATE` (`LOCAL_DATE` is local standard time); wind speed is in
 km/h and wind direction in tens of degrees, converted here at the boundary to
 m/s and degrees ("from", clockwise from true north; 0 with zero speed = calm).

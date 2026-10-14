@@ -1,1 +1,1 @@
-# Zarr/GeoParquet/PMTiles/GeoLibre export, figures, manifest. Milestone 6+.
+"""Exports: dashboard data, figures, GeoLibre/GeoParquet/Zarr, blog sync."""

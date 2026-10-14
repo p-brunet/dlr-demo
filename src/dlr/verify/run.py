@@ -1,4 +1,4 @@
-"""M5 orchestration: forecast DLR, layered verification, safety margins, report data."""
+"""Verification: forecast DLR, layered truth, safety margins, report data."""
 
 from __future__ import annotations
 

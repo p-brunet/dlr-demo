@@ -5,8 +5,8 @@ some (or when forced), recomputes everything downstream and rewrites
 `site/data/`:
 
 1. station observations (YOW/YND) for the whole archive period;
-2. reference ratings (M4) from the extended pseudo-analysis;
-3. forecast ratings and verification (M5), including the backtest report;
+2. reference ratings from the extended pseudo-analysis;
+3. forecast ratings and verification, including the backtest report;
 4. the SWOB wind check, when its archive is present;
 5. the site export, including the live 48 h forecast of the newest run with
    margins refit at most once per UTC day.

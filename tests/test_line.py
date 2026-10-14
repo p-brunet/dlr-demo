@@ -29,7 +29,7 @@ def test_route_is_connected_and_reaches_both_substations(osm: dict) -> None:
 
 
 def test_dropping_the_untagged_crossing_way_fails(osm: dict) -> None:
-    # Regression for M1: the untagged river-crossing way was silently dropped
+    # Regression: the untagged river-crossing way was once silently dropped
     # and the stored route stopped on the Ontario bank.
     route = assemble_route(osm, CANDIDATE.route_way_ids[:2])
     with pytest.raises(RouteValidationError, match="Outaouais"):

@@ -1,4 +1,4 @@
-"""M4 orchestration: span weather, reference ratings, attribution, line summary."""
+"""Reference ratings: span weather, static/AAR/DLR per span and hour, attribution."""
 
 from __future__ import annotations
 

@@ -3,7 +3,7 @@
 The route is assembled from the candidate's explicit, ordered way list and then
 validated: consecutive ways must join (gap <= MAX_JOIN_GAP_M) and the route must
 start and end within MAX_ENDPOINT_DISTANCE_M of its two substations. Either
-failure raises instead of writing a partial geometry -- the M1 output silently
+failure raises instead of writing a partial geometry -- an earlier version silently
 dropped an untagged river-crossing way and never reached Quebec.
 """
 

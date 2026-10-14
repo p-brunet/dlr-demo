@@ -1,4 +1,4 @@
-"""M4 gate: CIGRE TB 601 Annex E worked examples reproduced through linerate,
+"""CIGRE TB 601 Annex E worked examples reproduced through linerate,
 plus the project's own extensions (measured-GHI solar term, bundles, wind floor).
 
 Expected values and tolerances are those of linerate's acceptance tests

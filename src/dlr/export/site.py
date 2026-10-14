@@ -1,4 +1,4 @@
-"""M6 exports: data behind the published story map, plus reusable open formats.
+"""Site exports: data behind the published dashboard, plus reusable open formats.
 
 `site/` is a static site (GitHub Pages). `site/index.html` is hand-written;
 everything under `site/data/` is generated here (by CI on every new HRDPS run,
