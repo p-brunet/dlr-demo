@@ -55,9 +55,19 @@ def build_towers_on_way_query(way_id: int, timeout: int = 180) -> str:
     return f"[out:json][timeout:{timeout}];way({way_id});node(w)['power'='tower'];out skel qt;"
 
 
-def build_towers_on_ways_query(way_ids: list[int], timeout: int = 180) -> str:
-    id_list = ",".join(str(i) for i in way_ids)
-    return f"[out:json][timeout:{timeout}];way(id:{id_list});node(w)['power'='tower'];out skel qt;"
+def build_route_query(
+    route_way_ids: list[int], substation_way_ids: list[int], timeout: int = 180
+) -> str:
+    """Route ways (tags, node ids, geometry), all their nodes (with tags), and
+    the substation polygons the route is validated against."""
+    routes = ",".join(str(i) for i in route_way_ids)
+    query = (
+        f"[out:json][timeout:{timeout}];"
+        f"way(id:{routes})->.route;.route out body geom;node(w.route);out body;"
+    )
+    if substation_way_ids:
+        query += f"way(id:{','.join(str(i) for i in substation_way_ids)});out body geom;"
+    return query
 
 
 def build_ref_search_query(

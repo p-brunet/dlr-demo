@@ -1,23 +1,24 @@
 """Registry of candidate ON-QC line corridors considered for this demonstrator.
 
-Populated from live OSM/IESO verification in Milestone 1 (see docs/DATA_SOURCES.md
-for the full trail). `ottawa_gatineau` is the recommended candidate; its OSM way
-ids were found by direct geometric tracing, NOT by trusting ref-tag matches alone
--- an initial tag-only match to IESO zone codes D5A/H9A pointed at a much shorter,
-incorrect crossing (Hawthorne TS <-> Poste Vignan) that direct geometry tracing
-disproved. The real crossing is ~17km further northeast, near Masson-Angers/
-Thurso QC.
+Every candidate's route is an explicit, ordered list of OSM way ids, including
+untagged "bridge" ways: twice in this project the way that actually crosses the
+Ottawa River carried no `ref`/`operator` tag, and inferring the route from
+`ref` tags silently dropped it (see docs/PLAN.md §5 and §8). `select_line`
+validates that the assembled route is connected and reaches both substations,
+so a missing bridge way now fails loudly instead.
 """
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Substation(BaseModel):
     name: str
     operator: str
     region: str  # "ON" or "QC"
+    osm_way_id: int | None = None
+    """OSM substation polygon; route endpoints are validated against it."""
     lat: float
     lon: float
 
@@ -27,46 +28,77 @@ class LineCandidate(BaseModel):
     from_substation: Substation
     to_substation: Substation
     ieso_zones: list[str]
+    ieso_zone_basis: str
+    """How the IESO zone was matched to this line (inferred vs documented)."""
     osm_refs: list[str]
-    osm_way_ids: list[int]
-    primary_ref: str | None = None
-    """Which `osm_refs` entry defines the route geometry/length.
-
-    Several of the traced circuits (e.g. D5A 230kV and H9A 115kV here) share
-    the same right-of-way but are mapped as separate parallel OSM ways for
-    part of the corridor. Merging every tagged way into one geometry would
-    double-count those shared stretches. `primary_ref` picks one circuit's
-    ways (which happen to include every combined-ref way too, since a
-    combined "D5A;H9A" way still carries "D5A") as the representative route;
-    `osm_way_ids` is kept as-is for tower counting and full provenance.
-    """
+    route_way_ids: list[int] = Field(default_factory=list)
+    """Ordered from `from_substation` to `to_substation`; empty = not resolvable."""
+    traced_way_ids: list[int] = Field(default_factory=list)
+    """Other ways examined while tracing, kept for provenance only."""
     notes: str
 
 
 CANDIDATES: dict[str, LineCandidate] = {
+    "hawthorne-outaouais": LineCandidate(
+        candidate_id="hawthorne-outaouais",
+        from_substation=Substation(
+            name="Hawthorne TS",
+            operator="Hydro One",
+            region="ON",
+            osm_way_id=76734082,
+            lat=45.3890935,
+            lon=-75.5969060,
+        ),
+        to_substation=Substation(
+            name="Poste de l'Outaouais",
+            operator="Hydro-Quebec",
+            region="QC",
+            osm_way_id=168607246,
+            lat=45.5997,
+            lon=-75.4457,
+        ),
+        ieso_zones=["PQ.AT"],
+        ieso_zone_basis=(
+            "inferred: IESO 2022 APO describes the Ottawa-zone HVDC tie as two "
+            "230 kV circuits with a 1,250 MW converter limitation, and PQ.AT "
+            "flows peak at ~1,235 MW; no IESO document naming circuits per zone "
+            "was found"
+        ),
+        osm_refs=["A41T", "A42T"],
+        # 76608622 and 998555319 carry ref=A41T;A42T; 87817211 (river crossing
+        # and Quebec side) is untagged and was matched by geometric continuity
+        # (shared node at 45.5166N -75.4224W, same circuits=2/cables=6).
+        route_way_ids=[76608622, 998555319, 87817211],
+        notes=(
+            "Hydro One 230 kV double circuit A41T/A42T from Hawthorne TS to "
+            "Hydro-Quebec's Outaouais back-to-back HVDC converter (2 x 625 MW). "
+            "Selected 2026-10-13 over D5A/H9A, which are radial ties with no "
+            "flow (docs/ROADMAP.md §2). The transfer limit under N-0 is the "
+            "converter, not the line's thermal rating."
+        ),
+    ),
     "ottawa-gatineau": LineCandidate(
         candidate_id="ottawa-gatineau",
         from_substation=Substation(
             name="Hawthorne TS",
             operator="Hydro One",
             region="ON",
+            osm_way_id=76734082,
             lat=45.3890935,
             lon=-75.5969060,
         ),
         to_substation=Substation(
-            name="Poste Masson / Poste de l'Interconnexion-Maclaren",
+            name="Poste Masson",
             operator="Hydro-Quebec",
             region="QC",
-            lat=45.549673,
-            lon=-75.4247809,
+            osm_way_id=843488483,
+            lat=45.5439,
+            lon=-75.4215,
         ),
         ieso_zones=["PQ.D5A", "PQ.H9A"],
+        ieso_zone_basis="ref tags match zone names; IESO 2022 APO lists them as radial ties",
         osm_refs=["D5A", "H9A"],
-        primary_ref="D5A",
-        # D5A/H9A-tagged segments (Ontario side) + the untagged bridge segment
-        # at the border (87817195, confirmed by geometric continuity, not by
-        # ref tag -- OSM has no ref/operator tag on the crossing itself).
-        osm_way_ids=[
+        traced_way_ids=[
             535370792,
             535370788,
             76734037,
@@ -98,21 +130,13 @@ CANDIDATES: dict[str, LineCandidate] = {
             87817195,
         ],
         notes=(
-            "Corrected during Milestone 1 execution: initial tag-based cross-"
-            "validation (D5A/H9A refs matching IESO zone names) pointed at "
-            "Poste Vignan (~4km from Hawthorne TS) as the QC endpoint, but "
-            "direct geometry tracing of the ref-tagged OSM ways showed the "
-            "corridor actually runs ~17km northeast to Poste Masson / Poste "
-            "de l'Interconnexion-Maclaren near Masson-Angers/Thurso, QC. "
-            "The A41T/A42T circuits (also Hydro One, 230kV) run in the same "
-            "corridor and likely share the same right-of-way but are not "
-            "included in this geometry (kept as a documented parallel "
-            "circuit, not this candidate's primary pair). D5A (230kV) and "
-            "H9A (115kV) are combined on many way segments but mapped as "
-            "separate parallel ways for part of the corridor; the stored "
-            "geometry/length uses only D5A-bearing ways (primary_ref) to "
-            "avoid double-counting the shared right-of-way -- see "
-            "docs/DATA_SOURCES.md for the length comparison."
+            "Superseded 2026-10-13 (M1 candidate). D5A (230 kV) and H9A (115 kV) "
+            "are radial interconnection points that carried 0 MW on every "
+            "sampled day. The untagged crossing way 87817195 ends at Poste "
+            "Masson, not Interconnexion-Maclaren. The ways are fragmented (D5A "
+            "and H9A split into per-circuit stubs at two junctions) and D5A also "
+            "branches 45 km east (way 87872390), so no single ordered route is "
+            "registered."
         ),
     ),
     "beauharnois": LineCandidate(
@@ -132,14 +156,14 @@ CANDIDATES: dict[str, LineCandidate] = {
             lon=-73.99,
         ),
         ieso_zones=["PQ.B5D.B31L"],
+        ieso_zone_basis="ref tags match zone name only",
         osm_refs=["B-5-D", "B-31-L"],
-        osm_way_ids=[],
         notes=(
-            "Documented alternative, not pursued for Milestone 1: the bbox "
-            "used in initial research did not reach Ontario, so no Ontario-"
-            "side substation or connecting geometry has been identified. "
-            "Would need the same direct-geometry-tracing treatment as "
-            "ottawa-gatineau before it could be recommended."
+            "Documented alternative, not pursued: no Ontario-side substation or "
+            "connecting geometry has been identified. Would need the same "
+            "direct-geometry-tracing treatment before it could be recommended."
         ),
     ),
 }
+
+DEFAULT_CANDIDATE = "hawthorne-outaouais"
