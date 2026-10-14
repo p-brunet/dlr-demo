@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Line Rating Explorer</title>
+<meta name="description" content="Sensorless dynamic line rating of the A41T/A42T Ontario–Québec tie from open weather, terrain and line data.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 14 L8 2 L14 14 M5 9 H11' stroke='%232a78d6' stroke-width='1.8' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<style>
+:root {
+  color-scheme: light;
+  --surface-0: #f4f3f0;
+  --surface-1: #fcfcfb;
+  --surface-2: #efeeea;
+  --border: #e0dfda;
+  --grid: #e4e3df;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #7a7974;
+  --accent: #2a78d6;
+  --series-dlr: #2a78d6;
+  --series-aar: #eb6834;
+  --series-secure: #1baf7a;
+  --series-flow: #6250d6;
+  --series-span: #e87ba4;
+  --static: #52514e;
+  --marker: #0b0b0b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --surface-0: #121211;
+    --surface-1: #1a1a19;
+    --surface-2: #242422;
+    --border: #33332f;
+    --grid: #2c2c29;
+    --text-primary: #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted: #94938b;
+    --accent: #3987e5;
+    --series-dlr: #3987e5;
+    --series-aar: #d95926;
+    --series-secure: #199e70;
+    --series-flow: #9085e9;
+    --series-span: #d55181;
+    --static: #c3c2b7;
+    --marker: #f0efec;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #121211;
+  --surface-1: #1a1a19;
+  --surface-2: #242422;
+  --border: #33332f;
+  --grid: #2c2c29;
+  --text-primary: #f0efec;
+  --text-secondary: #c3c2b7;
+  --text-muted: #94938b;
+  --accent: #3987e5;
+  --series-dlr: #3987e5;
+  --series-aar: #d95926;
+  --series-secure: #199e70;
+  --series-flow: #9085e9;
+  --series-span: #d55181;
+  --static: #c3c2b7;
+  --marker: #f0efec;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+header { padding: 14px 20px 10px; border-bottom: 1px solid var(--border); background: var(--surface-1); }
+header h1 { margin: 0; font-size: 18px; font-weight: 650; }
+header p { margin: 2px 0 0; color: var(--text-secondary); font-size: 13px; }
+.layout { display: grid; grid-template-columns: 340px 1fr; height: calc(100vh - 62px); }
+aside { overflow-y: auto; background: var(--surface-1); border-right: 1px solid var(--border); padding: 14px 16px 24px; }
+main { display: grid; grid-template-rows: minmax(260px, 1fr) auto; min-width: 0; }
+#map { min-height: 260px; }
+.chapters { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.chapter {
+  text-align: left; border: 1px solid var(--border); background: var(--surface-1);
+  color: var(--text-primary); border-radius: 8px; padding: 9px 11px; cursor: pointer; font: inherit;
+}
+.chapter:hover { background: var(--surface-2); }
+.chapter[aria-current="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.chapter b { display: block; font-weight: 600; }
+.chapter span { color: var(--text-secondary); font-size: 12.5px; }
+#story { font-size: 13.5px; color: var(--text-primary); border-top: 1px solid var(--border); padding-top: 12px; }
+#story p { margin: 0 0 8px; }
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+.kpi { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
+.kpi .label { color: var(--text-secondary); font-size: 12px; }
+.kpi .value { font-size: 20px; font-weight: 600; }
+.controls { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--surface-1); border-top: 1px solid var(--border); flex-wrap: wrap; }
+.controls button, .seg button {
+  border: 1px solid var(--border); background: var(--surface-1); color: var(--text-primary);
+  border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; font-size: 13px;
+}
+.controls button:hover, .seg button:hover { background: var(--surface-2); }
+#windToggle[aria-pressed="true"] { background: var(--surface-2); font-weight: 600; }
+.seg { display: inline-flex; gap: 0; }
+.seg button { border-radius: 0; }
+.seg button:first-child { border-radius: 6px 0 0 6px; }
+.seg button:last-child { border-radius: 0 6px 6px 0; }
+.seg button[aria-pressed="true"] { background: var(--surface-2); font-weight: 600; }
+#hour { flex: 1 1 220px; accent-color: var(--accent); }
+#when { font-variant-numeric: tabular-nums; color: var(--text-secondary); font-size: 13px; min-width: 260px; }
+.chart-wrap { background: var(--surface-1); padding: 6px 14px 10px; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--text-secondary); margin: 2px 0 4px; }
+.legend button { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.legend button[aria-pressed="false"] { opacity: 0.4; }
+.key { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+#chart { width: 100%; height: 200px; display: block; }
+#chart text { fill: var(--text-muted); font-size: 11px; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 12px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.12); display: none; white-space: nowrap; z-index: 5;
+}
+.tip .row { display: flex; align-items: center; gap: 6px; }
+.maplegend {
+  position: absolute; left: 10px; bottom: 28px; background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; z-index: 2; min-width: 190px;
+}
+.maplegend .bar { height: 8px; border-radius: 4px; margin: 6px 0 2px; }
+.maplegend .ticks { display: flex; justify-content: space-between; color: var(--text-secondary); }
+.mapwrap { position: relative; }
+.windcanvas { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.windbox {
+  position: absolute; left: 10px; top: 10px; z-index: 2; background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px;
+}
+.windbox .muted { color: var(--text-secondary); }
+.maplibregl-popup-content { background: var(--surface-1); color: var(--text-primary); font: 12.5px/1.4 system-ui, sans-serif; }
+.maplibregl-popup-tip { display: none; }
+footer { font-size: 11.5px; color: var(--text-muted); padding: 10px 0 0; }
+footer a { color: var(--text-secondary); }
+.table-link { font-size: 12px; color: var(--text-secondary); }
+.viewseg { display: flex; margin-bottom: 12px; }
+.viewseg button { flex: 1; padding: 7px 10px; font-size: 13.5px; }
+.issued { font-size: 12.5px; color: var(--text-secondary); }
+.notice { border-left: 3px solid #fab219; background: var(--surface-2); padding: 6px 10px; border-radius: 4px; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; height: auto; }
+  aside { border-right: 0; border-bottom: 1px solid var(--border); }
+  main { grid-template-rows: 380px auto; }
+  #when { min-width: 0; flex-basis: 100%; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>How much more could this line carry?</h1>
+  <p>Weather-based (dynamic) rating forecast for the A41T/A42T 230 kV tie, Hawthorne TS (ON) ↔ Poste de l'Outaouais (QC), from open data only — updated with every new Environment Canada weather run.</p>
+</header>
+<div class="layout">
+  <aside>
+    <div class="seg viewseg" role="group" aria-label="View">
+      <button data-view="forecast" aria-pressed="true">Forecast · next 48 h</button>
+      <button data-view="history" aria-pressed="false">History &amp; story</button>
+    </div>
+    <div class="chapters" id="chapters"></div>
+    <div id="story"></div>
+    <footer id="credits"></footer>
+  </aside>
+  <main>
+    <div class="mapwrap">
+      <div id="map" style="height:100%"></div>
+      <canvas id="wind" class="windcanvas" aria-hidden="true"></canvas>
+      <div class="windbox" id="windbox"></div>
+      <div class="maplegend" id="maplegend"></div>
+    </div>
+    <div>
+      <div class="controls">
+        <button id="play" aria-label="Play">▶ Play</button>
+        <input id="hour" type="range" min="0" max="0" value="0" aria-label="Hour">
+        <span id="when"></span>
+        <span class="seg" role="group" aria-label="Map colour">
+          <button data-mode="ratio" aria-pressed="true">Rating ÷ static</button>
+          <button data-mode="exposure" aria-pressed="false">Exposure</button>
+          <button data-mode="limiting" aria-pressed="false">Weakest span</button>
+        </span>
+        <button id="windToggle" aria-pressed="true" title="Animated 10 m wind (HRDPS) for the selected hour">≋ Wind</button>
+        <span class="seg" role="group" aria-label="Chart window" id="windowSeg">
+          <button data-window="7" aria-pressed="true">7 days</button>
+          <button data-window="all" aria-pressed="false">All</button>
+        </span>
+      </div>
+      <div class="chart-wrap">
+        <div class="legend" id="legend"></div>
+        <svg id="chart" role="img" aria-label="Line rating over time"></svg>
+        <div class="tip" id="tip"></div>
+        <a class="table-link" href="data/line_ratings_hourly.parquet">Download the hourly table (Parquet)</a>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+"use strict";
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const fmtUTC = new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" });
+const fmtLocal = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+const fmtLocalLong = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", weekday: "short", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+const RATIO_STOPS = [[0.7, "#a62a2a"], [0.85, "#e66767"], [1.0, "#9a9993"], [1.15, "#3987e5"], [1.35, "#104281"]];
+const BLUE_STOPS = (lo, hi) => [[lo, "#86b6ef"], [(lo + hi) / 2, "#2a78d6"], [hi, "#0d366b"]];
+const SUMMER_MONTHS = [5, 6, 7, 8, 9, 10];
+const STALE_HOURS = 18;
+
+const state = { view: "forecast", hour: 0, mode: "ratio", window: "7", span: null, playing: null, wind: true, histHour: 0 };
+let HIST = null, FC = null, D = null, M, spans, nSpans, map;
+
+const getJSON = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r.json(); });
+const getBin = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r.arrayBuffer(); });
+const optional = (p) => p.catch(() => null);
+
+Promise.all([
+  getJSON("data/line_hourly.json"), getJSON("data/manifest.json"), getJSON("data/spans.geojson"),
+  getBin("data/span_ratio.bin"), getJSON("data/wind_grid.json"), getBin("data/wind_grid.bin"), getBin("data/span_wind.bin"),
+  optional(getJSON("data/forecast/forecast.json")), optional(getBin("data/forecast/span_ratio.bin")),
+  optional(getBin("data/forecast/wind_grid.bin")), optional(getBin("data/forecast/span_wind.bin")),
+]).then(([hourly, manifest, spanGeo, ratioBuf, wg, wgBuf, swBuf, fc, fcRatio, fcWind, fcSpanWind]) => {
+  M = manifest; spans = spanGeo; nSpans = spans.features.length;
+  spans.features.forEach((f, i) => { f.id = i; });
+  HIST = withTimes({ ...hourly, kind: "history", ratio: new Uint16Array(ratioBuf), spanWind: new Uint8Array(swBuf), windGrid: new Int8Array(wgBuf), grid: wg });
+  HIST.testStartIdx = HIST.times.findIndex((t) => t >= new Date(HIST.test_start + "T00:00:00Z"));
+  const ratios = HIST.dlr_mw.map((v, i) => (v == null ? NaN : v / HIST.static_mw[i]));
+  HIST.minIdx = argExt(ratios, (a, b) => a < b);
+  HIST.maxIdx = argExt(ratios, (a, b) => a > b);
+  HIST.peakFlowIdx = argExt(HIST.flow_per_circuit_mw || [], (a, b) => a > b);
+  if (fc && fcRatio && fcWind && fcSpanWind) {
+    FC = withTimes({ ...fc, kind: "forecast", ratio: new Uint16Array(fcRatio), spanWind: new Uint8Array(fcSpanWind), windGrid: new Int8Array(fcWind), grid: fc.grid });
+    FC.init = new Date(fc.init_utc);
+    const now = new Date();
+    const k = FC.times.findIndex((t) => t >= now);
+    FC.nowIdx = k < 0 ? FC.n - 1 : Math.max(0, k);
+    FC.expired = k < 0;
+  }
+  buildChapters(); buildCredits(); initMap();
+});
+
+function withTimes(ds) {
+  ds.times = Array.from({ length: ds.n }, (_, i) => new Date(Date.parse(ds.t0) + i * 3600e3));
+  return ds;
+}
+function argExt(arr, better) {
+  let best = -1;
+  arr.forEach((v, i) => { if (v != null && !Number.isNaN(v) && (best < 0 || better(v, arr[best]))) best = i; });
+  return Math.max(best, 0);
+}
+const pct = (x) => `${x > 0 ? "+" : ""}${Math.round(x * 100)} %`;
+const isSummer = (t) => SUMMER_MONTHS.includes(t.getUTCMonth() + 1);
+const spanStaticA = (p, t) => (isSummer(t) ? p.static_a : p.static_winter_a);
+const toMW = (amps) => (amps * Math.sqrt(3) * M.line.voltage_kv) / 1000;
+function ago(date) {
+  const h = (Date.now() - date) / 3600e3;
+  return h < 1 ? `${Math.round(h * 60)} min ago` : `${h.toFixed(h < 10 ? 1 : 0)} h ago`;
+}
+
+/* ---------- views ---------- */
+function activate(view, hour) {
+  if (view === "forecast" && !FC) view = "history";
+  if (state.view === "history" && D) state.histHour = state.hour;
+  state.view = view;
+  D = view === "forecast" ? FC : HIST;
+  document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+  document.getElementById("chapters").style.display = view === "history" ? "" : "none";
+  document.getElementById("windowSeg").style.display = view === "history" ? "" : "none";
+  document.getElementById("hour").max = D.n - 1;
+  document.querySelector(".table-link").style.display = view === "history" ? "" : "none";
+  state.span = null;
+  buildLegend();
+  if (view === "forecast") {
+    renderForecastStory();
+    setMode("ratio");
+    setHour(hour ?? FC.nowIdx);
+    if (map) fitLine();
+  } else {
+    setHour(hour ?? state.histHour);
+  }
+}
+document.querySelectorAll("[data-view]").forEach((b) => (b.onclick = () => {
+  if (b.dataset.view === "history") { activate("history"); showChapter(0); } else activate("forecast");
+}));
+
+function renderForecastStory() {
+  const el = document.getElementById("story");
+  const stale = (Date.now() - FC.init) / 3600e3 > STALE_HOURS;
+  const ahead = [];
+  for (let i = FC.nowIdx; i < FC.n; i++) ahead.push(i);
+  const next24 = ahead.filter((i) => i < FC.nowIdx + 24);
+  const minIdx = next24.reduce((b, i) => (FC.secure_mw[i] != null && (b < 0 || FC.secure_mw[i] < FC.secure_mw[b]) ? i : b), -1);
+  const below = ahead.filter((i) => FC.secure_mw[i] != null && FC.secure_mw[i] < FC.static_mw[i]).length;
+  const now = FC.nowIdx, m = FC.margin.filter((v) => v != null);
+  const ratioNow = FC.secure_mw[now] / FC.static_mw[now];
+  el.innerHTML = `
+    <p class="issued">Forecast from the Environment Canada HRDPS run of <b>${fmtUTC.format(FC.init)} UTC</b>,
+      published here ${ago(new Date(FC.generated_utc))}. A new run arrives about every 6 hours.</p>
+    ${FC.expired ? `<p class="notice">⚠ This forecast has run out: no newer weather run has been published yet.</p>`
+      : stale ? `<p class="notice">⚠ Older than usual: the weather feed may be delayed.</p>` : ""}
+    ${kpis([
+      ["Secure rating now", `${FC.secure_mw[now] ?? "n/a"} MW`],
+      ["vs static", Number.isFinite(ratioNow) ? `${ratioNow.toFixed(2)} ×` : "n/a"],
+      ["Lowest, next 24 h", minIdx < 0 ? "n/a" : `${FC.secure_mw[minIdx]} MW`],
+      ["Hours below static ahead", `${below} of ${ahead.length}`],
+    ])}
+    ${minIdx < 0 ? "" : `<p>The tightest hour in the next day is <b>${fmtLocalLong.format(FC.times[minIdx])}</b>
+      (${(FC.secure_mw[minIdx] / FC.static_mw[minIdx]).toFixed(2)} × static).</p>`}
+    <p><span style="color:var(--series-dlr)">Forecast DLR</span> is the expected rating of the weakest span from the
+      forecast weather; <span style="color:var(--series-secure)">secure DLR</span> subtracts a safety margin
+      (${Math.round(100 * Math.min(...m))}–${Math.round(100 * Math.max(...m))} %, growing with lead time) so it should be
+      exceeded by the real rating in only ${Math.round(100 * (1 - FC.confidence))} % of hours.
+      The margins are refit daily on ${FC.margins_n_pairs.toLocaleString("en-CA")} verified forecast hours
+      (last fit ${FC.margins_fitted_on}).</p>
+    <p>Drag the slider or press Play to step through the next ${FC.n} hours; hover a span for its forecast wind and
+      its angle to the wire. Switch to <b>History &amp; story</b> to see how the method performed since July.</p>`;
+}
+
+function chapters() {
+  const H = HIST, r = M.ratings, v = M.verification, base = v.variants.base;
+  return [
+    { title: "The line", sub: "A 34 km tie under converter-limited flow", mode: "ratio", hour: H.peakFlowIdx,
+      html: `<p>A41T/A42T carries the Ontario–Québec HVDC tie (two 230 kV circuits, ${M.line.towers} towers, ${M.line.spans} spans) to Hydro-Québec's 1,250 MW Outaouais converter. Over the period the tie ran above 1,200 MW for long stretches.</p>
+             <p>With both circuits in service the <b>converter</b>, not the line, caps the transfer. Thermal headroom matters when one circuit is out.</p>
+             ${kpis([["Static rating / circuit (summer)", `${r.static_line_mw_per_circuit} MW`], ["Spans", M.line.spans]])}` },
+    { title: "Where wind reaches the wires", sub: "Terrain sheltering from LiDAR", mode: "exposure", hour: null,
+      html: `<p>Trees and buildings 20–60 m from each span, measured in NRCan's 1 m LiDAR elevation models, shelter the conductors. Darker spans are more exposed (open fields, the river crossing).</p>` },
+    { title: "The weakest span keeps moving", sub: `${r.spans_ever_limiting} of ${M.line.spans} spans limit the line at some hour`, mode: "limiting", hour: null,
+      html: `<p>A line is only as strong as its weakest span. Because the spans point in every direction, a wind that cools most of the line runs <i>along</i> a few spans and barely cools them.</p>
+             <p>${r.spans_ever_limiting} different spans are the bottleneck at some hour. Wind angle explains ${Math.round(100 * (r.dlr_below_static.dominant_driver_share.wind_angle || 0))} % of the hours when the weather-based rating falls below static.</p>
+             <p>Switch on <b>≋ Wind</b> to see the flow, and hover a span for the wind's angle to its wire.</p>` },
+    { title: "The worst hour", sub: "Calm, hot, sun on the wires", mode: "ratio", hour: H.minIdx,
+      html: `<p>At this hour the weather-based rating falls to <b>${pct(H.dlr_mw[H.minIdx] / H.static_mw[H.minIdx] - 1)}</b> versus the static rating, which assumes a steady 4 km/h crosswind on every span.</p>
+             ${kpis([["Below static", `${Math.round(100 * r.dlr_below_static.share_of_hours)} % of hours`], ["Median gain", pct(r.dlr_over_static.median - 1)]])}` },
+    { title: "The best hour", sub: "Cool and windy", mode: "ratio", hour: H.maxIdx,
+      html: `<p>When it is cool and windy the same conductors could carry <b>${pct(H.dlr_mw[H.maxIdx] / H.static_mw[H.maxIdx] - 1)}</b> more than their static rating.</p>
+             <p>How far to trust the hourly wind direction is the biggest modelling choice. Minute-by-minute wind at Ottawa's Experimental Farm shows the direction swings within each hour, which cools the wire like a ~9° minimum angle of attack: the median gain moves from ${pct(r.dlr_over_static.median - 1)} to ${pct(r.sensitivity.min_attack_angle_9deg.dlr_over_static_median - 1)} (a 20° floor would give ${pct(r.sensitivity.min_attack_angle_20deg.dlr_over_static_median - 1)}).</p>` },
+    { title: "A day ahead, with a safety margin", sub: "Forecast skill and the 98 % secure rating", mode: "ratio", hour: Math.min(H.n - 1, H.testStartIdx + 24 * 10),
+      html: `<p>HRDPS forecasts the rating within ${Math.round(100 * base.rating_mae_rel_by_lead[24])} % at 24 h (vs. ${Math.round(100 * base.rating_mae_rel_by_lead[7])} % at 7 h). A ${Math.round(100 * base.margin_by_lead[24])} % margin keeps the day-ahead <span style="color:var(--series-secure)">secure rating</span> above the truth in only ${(100 * base.test.secure_exceeds_truth_share).toFixed(1)} % of test hours.</p>
+             <p>Checked against minute-by-minute wind at a real station, a virtual copy of the line needs a similar margin (about 16 %).</p>
+             ${kpis([["Static above truth", `${Math.round(100 * base.test.static_exceeds_truth_share)} % of hours`], ["Secure above truth", `${(100 * base.test.secure_exceeds_truth_share).toFixed(1)} %`]])}` },
+  ];
+}
+function kpis(items) {
+  return `<div class="kpis">${items.map(([l, v]) => `<div class="kpi"><div class="label">${l}</div><div class="value">${v}</div></div>`).join("")}</div>`;
+}
+function buildChapters() {
+  const box = document.getElementById("chapters");
+  const list = chapters();
+  list.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "chapter"; b.innerHTML = `<b>${i + 1}. ${c.title}</b><span>${c.sub}</span>`;
+    b.onclick = () => showChapter(i);
+    box.appendChild(b);
+  });
+  box._list = list;
+}
+function showChapter(i) {
+  if (state.view !== "history") activate("history");
+  const list = document.getElementById("chapters")._list;
+  document.querySelectorAll(".chapter").forEach((b, j) => b.setAttribute("aria-current", String(i === j)));
+  const c = list[i];
+  document.getElementById("story").innerHTML = c.html;
+  setMode(c.mode);
+  if (c.hour != null) setHour(c.hour);
+  if (map && c.hour != null && c.mode === "ratio" && HIST.limiting_idx[c.hour] != null && i > 0) {
+    const f = spans.features[HIST.limiting_idx[c.hour]];
+    const [a, b] = f.geometry.coordinates;
+    map.flyTo({ center: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], zoom: 12.5, duration: 1200 });
+  } else if (map) fitLine();
+}
+function buildCredits() {
+  const a = M.attributions;
+  document.getElementById("credits").innerHTML =
+    `<p><b>Assumptions:</b> ${M.assumptions.conductor}, ${M.assumptions.max_operating_temp_c} °C, CIGRE TB 601 (linerate). Static: ${M.assumptions.static}. ${M.assumptions.note}</p>
+     <p>Line ${a.line_towers_spans}. Weather: ${a.weather_forecast}. Stations: ${a.station_observations} Terrain: ${a.terrain}. Flows: IESO public reports. Basemap: ${a.basemap}.</p>
+     <p><a href="${M.repository}">Code and method</a> · <a href="data/manifest.json">manifest</a> · data generated ${M.generated_utc.slice(0, 16).replace("T", " ")} UTC</p>`;
+}
+
+/* ---------- map ---------- */
+function initMap() {
+  map = new maplibregl.Map({
+    container: "map", style: "https://tiles.openfreemap.org/styles/positron",
+    attributionControl: { compact: true }, cooperativeGestures: false,
+  });
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+  map.on("load", () => {
+    map.addSource("spans", { type: "geojson", data: spans });
+    map.addLayer({ id: "spans-casing", type: "line", source: "spans",
+      paint: { "line-color": css("--surface-1"), "line-width": ["case", ["boolean", ["feature-state", "limiting"], false], 11, 7] } });
+    map.addLayer({ id: "spans", type: "line", source: "spans",
+      layout: { "line-cap": "butt" },
+      paint: { "line-color": "#9a9993", "line-width": ["case", ["boolean", ["feature-state", "limiting"], false], 8, 5] } });
+    map.addLayer({ id: "spans-hit", type: "line", source: "spans", paint: { "line-color": "#000", "line-opacity": 0, "line-width": 18 } });
+    const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 10 });
+    map.on("mousemove", "spans-hit", (e) => {
+      map.getCanvas().style.cursor = "pointer";
+      const f = e.features[0], p = f.properties, i = f.id;
+      const r = D.ratio[state.hour * nSpans + i] / 1000;
+      const mw = r > 0 ? Math.round(toMW(r * spanStaticA(p, D.times[state.hour]))) : null;
+      const label = state.view === "forecast" ? "Forecast ÷ static" : "Rating ÷ static";
+      popup.setLngLat(e.lngLat).setHTML(
+        `<b>${p.span_id}</b> · ${p.region} · ${Math.round(p.length_m)} m<br>
+         ${label}: <b>${r > 0 ? r.toFixed(2) : "n/a"}</b>${mw ? ` (${mw} MW)` : ""}<br>
+         ${spanWindText(i, p.axis_deg)}<br>
+         Exposure ${(+p.exposure_index).toFixed(2)} · limits the line ${(100 * p.limiting_share).toFixed(1)} % of past hours
+         ${D.limiting_idx[state.hour] === i ? "<br><b>Weakest span at this hour</b>" : ""}`).addTo(map);
+    });
+    map.on("mouseleave", "spans-hit", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
+    map.on("click", "spans-hit", (e) => { state.span = state.span === e.features[0].id ? null : e.features[0].id; drawChart(); buildLegend(); });
+    map.on("move", () => (reducedMotion ? drawWindArrows() : clearWind()));
+    fitLine();
+    if (FC) activate("forecast"); else { activate("history"); showChapter(0); }
+    startWind();
+  });
+}
+function fitLine() {
+  const b = new maplibregl.LngLatBounds();
+  spans.features.forEach((f) => f.geometry.coordinates.forEach((c) => b.extend(c)));
+  map.fitBounds(b, { padding: 40, duration: 800 });
+}
+function interpolate(stops) { return ["interpolate", ["linear"], ["get", "_v"], ...stops.flat()]; }
+function applyMode() {
+  if (!map || !map.getLayer("spans")) return;
+  if (state.mode === "ratio") {
+    updateRatioValues();
+    map.setPaintProperty("spans", "line-color", interpolate(RATIO_STOPS));
+  } else if (state.mode === "exposure") {
+    spans.features.forEach((f) => { f.properties._v = f.properties.exposure_index; });
+    map.getSource("spans").setData(spans);
+    map.setPaintProperty("spans", "line-color", interpolate(BLUE_STOPS(0.45, 0.95)));
+  } else {
+    const max = Math.max(...spans.features.map((f) => f.properties.limiting_share));
+    spans.features.forEach((f) => { f.properties._v = f.properties.limiting_share; });
+    map.getSource("spans").setData(spans);
+    map.setPaintProperty("spans", "line-color", interpolate(BLUE_STOPS(0, max)));
+  }
+  drawMapLegend();
+}
+function updateRatioValues() {
+  spans.features.forEach((f, i) => { const v = D.ratio[state.hour * nSpans + i]; f.properties._v = v ? v / 1000 : 1.0; });
+  map.getSource("spans").setData(spans);
+}
+function drawMapLegend() {
+  const el = document.getElementById("maplegend");
+  let stops, title, ticks;
+  if (state.mode === "ratio") {
+    stops = RATIO_STOPS; ticks = ["0.7", "1.0", "1.35"];
+    title = state.view === "forecast" ? "Span forecast ÷ static, this hour" : "Span rating ÷ static, this hour";
+  } else if (state.mode === "exposure") { stops = BLUE_STOPS(0.45, 0.95); title = "Wind exposure index"; ticks = ["sheltered", "", "open"]; }
+  else { const m = Math.max(...spans.features.map((f) => f.properties.limiting_share)); stops = BLUE_STOPS(0, m); title = "Share of past hours as weakest span"; ticks = ["0 %", "", `${Math.round(m * 100)} %`]; }
+  const lo = stops[0][0], hi = stops[stops.length - 1][0];
+  const grad = stops.map(([v, c]) => `${c} ${((v - lo) / (hi - lo)) * 100}%`).join(",");
+  el.innerHTML = `<div>${title}</div><div class="bar" style="background:linear-gradient(90deg,${grad})"></div><div class="ticks">${ticks.map((t) => `<span>${t}</span>`).join("")}</div>`;
+}
+function setMode(mode) {
+  state.mode = mode;
+  document.querySelectorAll("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+  applyMode();
+}
+document.querySelectorAll("[data-mode]").forEach((b) => (b.onclick = () => setMode(b.dataset.mode)));
+document.querySelectorAll("[data-window]").forEach((b) => (b.onclick = () => {
+  state.window = b.dataset.window;
+  document.querySelectorAll("[data-window]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  drawChart();
+}));
+
+/* ---------- time ---------- */
+let lastLimiting = null;
+function setHour(i) {
+  state.hour = Math.max(0, Math.min(D.n - 1, i));
+  document.getElementById("hour").value = state.hour;
+  const t = D.times[state.hour];
+  const r = D.dlr_mw[state.hour] / D.static_mw[state.hour];
+  const rs = Number.isFinite(r) ? r.toFixed(2) : "n/a";
+  document.getElementById("when").textContent = state.view === "forecast"
+    ? `${fmtUTC.format(t)} UTC (${fmtLocal.format(t)}) · +${FC.lead_h[state.hour]} h · forecast ${rs} × static${t < new Date() ? " · past" : ""}`
+    : `${fmtUTC.format(t)} UTC (${fmtLocal.format(t)}) · line ${rs} × static`;
+  if (map && map.getSource("spans")) {
+    if (lastLimiting != null) map.setFeatureState({ source: "spans", id: lastLimiting }, { limiting: false });
+    lastLimiting = D.limiting_idx[state.hour];
+    if (lastLimiting != null) map.setFeatureState({ source: "spans", id: lastLimiting }, { limiting: true });
+    if (state.mode === "ratio") updateRatioValues();
+  }
+  updateWindBox();
+  if (reducedMotion) drawWindArrows();
+  drawChart();
+}
+document.getElementById("hour").oninput = (e) => setHour(+e.target.value);
+document.getElementById("play").onclick = () => {
+  const btn = document.getElementById("play");
+  if (state.playing) { clearInterval(state.playing); state.playing = null; btn.textContent = "▶ Play"; return; }
+  btn.textContent = "❚❚ Pause";
+  state.playing = setInterval(() => setHour(state.hour + 1 >= D.n ? 0 : state.hour + 1), state.view === "forecast" ? 350 : 120);
+};
+
+/* ---------- wind ---------- */
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const COMPASS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+const compass = (deg) => COMPASS[Math.round(deg / 22.5) % 16];
+function windAt(lon, lat) {
+  // bilinear u/v (m/s, east/north) on the regular grid, for the selected hour
+  const G = D.grid;
+  const fx = (lon - G.lon0) / G.step, fy = (lat - G.lat0) / G.step;
+  if (fx < 0 || fy < 0 || fx > G.nx - 1 || fy > G.ny - 1) return null;
+  const i0 = Math.min(Math.floor(fx), G.nx - 2), j0 = Math.min(Math.floor(fy), G.ny - 2);
+  const wx = fx - i0, wy = fy - j0, base = state.hour * G.nx * G.ny;
+  const at = (j, i, c) => D.windGrid[(base + j * G.nx + i) * 2 + c] * G.scale_ms;
+  const lerp = (c) => (at(j0, i0, c) * (1 - wx) + at(j0, i0 + 1, c) * wx) * (1 - wy)
+    + (at(j0 + 1, i0, c) * (1 - wx) + at(j0 + 1, i0 + 1, c) * wx) * wy;
+  return [lerp(0), lerp(1)];
+}
+const fromDirection = (u, v) => (Math.atan2(-u, -v) * 180 / Math.PI + 360) % 360;
+function updateWindBox() {
+  const box = document.getElementById("windbox");
+  if (!D) return;
+  box.style.display = state.wind ? "block" : "none";
+  const G = D.grid;
+  let su = 0, sv = 0, ss = 0;
+  const base = state.hour * G.nx * G.ny, n = G.nx * G.ny;
+  for (let k = 0; k < n; k++) {
+    const u = D.windGrid[(base + k) * 2] * G.scale_ms, v = D.windGrid[(base + k) * 2 + 1] * G.scale_ms;
+    su += u; sv += v; ss += Math.hypot(u, v);
+  }
+  const d = fromDirection(su, sv);
+  box.innerHTML = `<b>Wind ${(ss / n).toFixed(1)} m/s</b> from ${compass(d)} (${Math.round(d)}°)`
+    + `<br><span class="muted">10 m, HRDPS ${state.view === "forecast" ? "forecast" : "analysis"}, corridor average</span>`;
+}
+function spanWindText(i, axisDeg) {
+  const k = (state.hour * nSpans + i) * 2, s = D.spanWind[k], d2 = D.spanWind[k + 1];
+  if (s === 255 || d2 === 255) return "Wind at span: n/a";
+  const dir = d2 * 2, diff = Math.abs((((dir % 180) - axisDeg) % 180 + 180) % 180);
+  const attack = Math.min(diff, 180 - diff);
+  const feel = attack < 20 ? "almost along the wire" : attack > 60 ? "across the wire" : "at an angle";
+  return `Wind at span (20 m): ${(s / 10).toFixed(1)} m/s from ${compass(dir)} · <b>${Math.round(attack)}°</b> to the wire (${feel})`;
+}
+const windCanvas = document.getElementById("wind");
+const wctx = windCanvas.getContext("2d");
+let particles = [], windFrame = null;
+function spawn(p) {
+  const G = D.grid;
+  p.lon = G.lon0 + Math.random() * (G.nx - 1) * G.step;
+  p.lat = G.lat0 + Math.random() * (G.ny - 1) * G.step;
+  p.age = 0; p.life = 50 + Math.random() * 70;
+  return p;
+}
+function sizeWindCanvas() {
+  const r = windCanvas.parentElement.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  windCanvas.width = Math.round(r.width * dpr); windCanvas.height = Math.round(r.height * dpr);
+  windCanvas.style.width = `${r.width}px`; windCanvas.style.height = `${r.height}px`;
+  wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const count = Math.round(Math.min(1500, (r.width * r.height) / 700));
+  particles = Array.from({ length: count }, () => { const p = spawn({}); p.age = Math.random() * p.life; return p; });
+}
+function clearWind() { wctx.clearRect(0, 0, windCanvas.width, windCanvas.height); }
+function stepWind() {
+  const r = windCanvas.getBoundingClientRect();
+  wctx.globalCompositeOperation = "destination-in";  // fade the previous trails
+  wctx.fillStyle = "rgba(0,0,0,0.92)";
+  wctx.fillRect(0, 0, r.width, r.height);
+  wctx.globalCompositeOperation = "source-over";
+  wctx.strokeStyle = css("--text-secondary"); wctx.globalAlpha = 0.55; wctx.lineWidth = 1.1;
+  wctx.beginPath();
+  for (const p of particles) {
+    const w = windAt(p.lon, p.lat);
+    if (!w || ++p.age > p.life) { spawn(p); continue; }
+    const a = map.project([p.lon, p.lat]);
+    const b = { x: a.x + w[0] * 0.45, y: a.y - w[1] * 0.45 };  // px per frame per m/s
+    const ll = map.unproject([b.x, b.y]);
+    wctx.moveTo(a.x, a.y); wctx.lineTo(b.x, b.y);
+    p.lon = ll.lng; p.lat = ll.lat;
+  }
+  wctx.stroke(); wctx.globalAlpha = 1;
+  windFrame = requestAnimationFrame(stepWind);
+}
+function drawWindArrows() {
+  // static arrows instead of animation (prefers-reduced-motion)
+  if (!map || !D) return;
+  clearWind();
+  if (!state.wind) return;
+  const G = D.grid;
+  wctx.strokeStyle = css("--text-secondary"); wctx.lineWidth = 1.4;
+  for (let j = 0; j < G.ny; j += 2) for (let i = 0; i < G.nx; i += 2) {
+    const lon = G.lon0 + i * G.step, lat = G.lat0 + j * G.step, w = windAt(lon, lat);
+    if (!w) continue;
+    const a = map.project([lon, lat]), speed = Math.hypot(w[0], w[1]), k = 4 + speed * 3;
+    const ux = w[0] / (speed || 1), uy = -w[1] / (speed || 1);
+    const tip = { x: a.x + ux * k, y: a.y + uy * k };
+    wctx.beginPath();
+    wctx.moveTo(a.x - ux * k, a.y - uy * k); wctx.lineTo(tip.x, tip.y);
+    wctx.lineTo(tip.x - ux * 5 - uy * 3, tip.y - uy * 5 + ux * 3);
+    wctx.moveTo(tip.x, tip.y); wctx.lineTo(tip.x - ux * 5 + uy * 3, tip.y - uy * 5 - ux * 3);
+    wctx.stroke();
+  }
+}
+function startWind() {
+  if (windFrame) cancelAnimationFrame(windFrame);
+  windFrame = null;
+  sizeWindCanvas(); clearWind();
+  if (!state.wind) return;
+  if (reducedMotion) drawWindArrows(); else windFrame = requestAnimationFrame(stepWind);
+}
+document.getElementById("windToggle").onclick = (e) => {
+  state.wind = !state.wind;
+  e.currentTarget.setAttribute("aria-pressed", String(state.wind));
+  updateWindBox(); startWind();
+};
+window.addEventListener("resize", () => map && startWind());
+
+/* ---------- chart ---------- */
+const SERIES = {
+  history: [
+    { key: "dlr_mw", label: "Weather-based rating (DLR)", color: "--series-dlr", on: true },
+    { key: "aar_mw", label: "Ambient-adjusted (AAR)", color: "--series-aar", on: true },
+    { key: "dayahead_secure_mw", label: "Day-ahead secure DLR (98 %)", color: "--series-secure", on: true },
+    { key: "flow_per_circuit_mw", label: "PQ.AT flow per circuit", color: "--series-flow", on: false },
+  ],
+  forecast: [
+    { key: "dlr_mw", label: "Forecast DLR", color: "--series-dlr", on: true },
+    { key: "secure_mw", label: "Secure DLR (98 %)", color: "--series-secure", on: true },
+  ],
+};
+function buildLegend() {
+  const el = document.getElementById("legend");
+  el.innerHTML = "";
+  const st = document.createElement("span");
+  st.innerHTML = `<span class="key" style="background:${css("--static")}"></span> Static rating`;
+  el.appendChild(st);
+  SERIES[state.view].forEach((s) => {
+    const b = document.createElement("button");
+    b.setAttribute("aria-pressed", String(s.on));
+    b.innerHTML = `<span class="key" style="background:${css(s.color)}"></span>${s.label}`;
+    b.onclick = () => { s.on = !s.on; b.setAttribute("aria-pressed", String(s.on)); drawChart(); };
+    el.appendChild(b);
+  });
+  if (state.span != null) {
+    const s = document.createElement("span");
+    s.innerHTML = `<span class="key" style="background:${css("--series-span")}"></span>Span ${spans.features[state.span].properties.span_id} (click again to clear)`;
+    el.appendChild(s);
+  }
+}
+function spanSeries(i) {
+  const p = spans.features[i].properties;
+  return Array.from({ length: D.n }, (_, h) => {
+    const v = D.ratio[h * nSpans + i];
+    return v ? toMW((v / 1000) * spanStaticA(p, D.times[h])) : null;
+  });
+}
+function polyline(data, i0, i1, x, y) {
+  let d = "", pen = false;
+  for (let i = i0; i <= i1; i++) {
+    const v = data[i];
+    if (v == null) { pen = false; continue; }
+    d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`; pen = true;
+  }
+  return d;
+}
+function drawChart() {
+  if (!D) return;
+  const svg = document.getElementById("chart");
+  const W = svg.clientWidth || 800, Ht = svg.clientHeight || 200, pad = { l: 44, r: 10, t: 18, b: 22 };
+  let i0 = 0, i1 = D.n - 1;
+  if (state.view === "history" && state.window === "7") {
+    i0 = Math.max(0, state.hour - 84); i1 = Math.min(D.n - 1, i0 + 168); i0 = Math.max(0, i1 - 168);
+  }
+  const active = SERIES[state.view].filter((s) => s.on && D[s.key]).map((s) => ({ ...s, data: D[s.key] }));
+  if (state.span != null) active.push({ key: "span", label: "Selected span", color: "--series-span", data: spanSeries(state.span) });
+  let lo = Infinity, hi = -Infinity;
+  [D.static_mw, ...active.map((s) => s.data)].forEach((arr) => {
+    for (let i = i0; i <= i1; i++) { const v = arr[i]; if (v != null) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }
+  });
+  lo = Math.floor((lo - 20) / 100) * 100; hi = Math.ceil((hi + 20) / 100) * 100;
+  const x = (i) => pad.l + ((i - i0) / Math.max(1, i1 - i0)) * (W - pad.l - pad.r);
+  const y = (v) => pad.t + (1 - (v - lo) / (hi - lo)) * (Ht - pad.t - pad.b);
+  let out = "";
+  if (state.view === "forecast" && FC.nowIdx > 0) {  // shade the part of the run already in the past
+    out += `<rect x="${pad.l}" y="${pad.t}" width="${Math.max(0, x(FC.nowIdx) - pad.l)}" height="${Ht - pad.t - pad.b}" fill="${css("--surface-2")}"/>`;
+    out += `<text x="${pad.l + 4}" y="${pad.t + 10}">past</text>`;
+  }
+  const tick = hi - lo <= 600 ? 100 : 200;
+  for (let v = Math.ceil(lo / tick) * tick; v <= hi; v += tick) {
+    out += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v)}" y2="${y(v)}" stroke="${css("--grid")}" stroke-width="1"/>`;
+    out += `<text x="${pad.l - 6}" y="${y(v) + 4}" text-anchor="end">${Math.round(v)}</text>`;
+  }
+  out += `<text x="${pad.l - 6}" y="10" text-anchor="end">MW</text>`;
+  const days = new Set();
+  for (let i = i0; i <= i1; i++) {
+    const t = D.times[i];
+    if (state.view === "forecast") {
+      if (t.getUTCHours() % 6 === 0 && x(i) < W - pad.r - 30)
+        out += `<text x="${x(i)}" y="${Ht - 6}" text-anchor="middle">${t.toISOString().slice(5, 10)} ${String(t.getUTCHours()).padStart(2, "0")}Z</text>`;
+    } else if (t.getUTCHours() === 0) {
+      const step = (i1 - i0) > 24 * 20 ? 7 : 1;
+      const dayNum = Math.floor(t / 864e5);
+      if (dayNum % step === 0 && !days.has(dayNum)) {
+        days.add(dayNum);
+        out += `<text x="${x(i)}" y="${Ht - 6}" text-anchor="middle">${t.toISOString().slice(5, 10)}</text>`;
+      }
+    }
+  }
+  if (state.view === "history" && D.testStartIdx > i0 && D.testStartIdx < i1) {
+    out += `<line x1="${x(D.testStartIdx)}" x2="${x(D.testStartIdx)}" y1="${pad.t}" y2="${Ht - pad.b}" stroke="${css("--grid")}" stroke-width="1"/>`;
+    out += `<text x="${x(D.testStartIdx) + 4}" y="${pad.t + 10}">test period →</text>`;
+  }
+  out += `<path d="${polyline(D.static_mw, i0, i1, x, y)}" fill="none" stroke="${css("--static")}" stroke-width="1.5"/>`;
+  active.forEach((s) => {
+    out += `<path d="${polyline(s.data, i0, i1, x, y)}" fill="none" stroke="${css(s.color)}" stroke-width="${s.key === "dlr_mw" ? 2 : 1.8}" stroke-linejoin="round" stroke-linecap="round"/>`;
+  });
+  if (state.view === "forecast" && !FC.expired) {
+    out += `<line x1="${x(FC.nowIdx)}" x2="${x(FC.nowIdx)}" y1="${pad.t}" y2="${Ht - pad.b}" stroke="${css("--text-muted")}" stroke-width="1"/>`;
+    out += `<text x="${x(FC.nowIdx) + 4}" y="${pad.t + 10}">now</text>`;
+  }
+  if (state.hour >= i0 && state.hour <= i1)
+    out += `<line x1="${x(state.hour)}" x2="${x(state.hour)}" y1="${pad.t}" y2="${Ht - pad.b}" stroke="${css("--marker")}" stroke-width="1.5"/>`;
+  out += `<line id="cross" x1="0" x2="0" y1="${pad.t}" y2="${Ht - pad.b}" stroke="${css("--text-muted")}" stroke-width="1" visibility="hidden"/>`;
+  out += `<rect id="hit" x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${Ht}" fill="transparent" style="cursor:crosshair"/>`;
+  svg.setAttribute("viewBox", `0 0 ${W} ${Ht}`);
+  svg.innerHTML = out;
+  const hit = svg.querySelector("#hit"), cross = svg.querySelector("#cross"), tip = document.getElementById("tip");
+  const idxAt = (ev) => {
+    const r = svg.getBoundingClientRect();
+    return Math.round(i0 + ((ev.clientX - r.left - pad.l) / (W - pad.l - pad.r)) * (i1 - i0));
+  };
+  hit.onmousemove = (ev) => {
+    const i = Math.max(i0, Math.min(i1, idxAt(ev)));
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    const rows = [["--static", "Static", D.static_mw[i]], ...active.map((s) => [s.color, s.label, s.data[i]])]
+      .map(([c, l, v]) => `<div class="row"><span class="key" style="background:${css(c)}"></span>${l}: <b>${v == null ? "n/a" : Math.round(v) + " MW"}</b></div>`).join("");
+    const lead = state.view === "forecast" ? ` · +${FC.lead_h[i]} h` : "";
+    tip.innerHTML = `<div>${fmtUTC.format(D.times[i])} UTC${lead}</div>${rows}`;
+    tip.style.display = "block";
+    const wrap = svg.parentElement.getBoundingClientRect(), r = svg.getBoundingClientRect();
+    const left = r.left - wrap.left + (x(i) / W) * r.width + 12;
+    tip.style.left = `${Math.min(left, wrap.width - tip.offsetWidth - 8)}px`;
+    tip.style.top = `${r.top - wrap.top + 6}px`;
+  };
+  hit.onmouseleave = () => { cross.setAttribute("visibility", "hidden"); tip.style.display = "none"; };
+  hit.onclick = (ev) => setHour(Math.max(i0, Math.min(i1, idxAt(ev))));
+}
+window.addEventListener("resize", () => drawChart());
+</script>
+</body>
+</html>
