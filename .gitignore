@@ -235,3 +235,6 @@ data/interim/
 site/data/
 site/geolibre.html
 site/dlr.geolibre.json
+
+# Personal project notes (plan, roadmap, decision log, commit plan) -- never tracked
+notes/
