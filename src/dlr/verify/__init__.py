@@ -1,1 +1,1 @@
-# Forecast verification metrics, baselines and safety margins. Milestone 5+.
+"""Forecast verification, baselines and safety margins."""

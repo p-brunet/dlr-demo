@@ -1,0 +1,143 @@
+{
+  "train_period": "valid < 2026-09-01",
+  "test_period": "init >= 2026-09-01",
+  "confidence": 0.98,
+  "first_scored_lead_h": 7,
+  "variants": {
+    "base": {
+      "rating_mae_rel_by_lead": {
+        "7": 0.0294,
+        "12": 0.0341,
+        "24": 0.0465,
+        "36": 0.0521,
+        "48": 0.0555
+      },
+      "rating_bias_a_mean": -4.7,
+      "persistence_mae_over_forecast_mae": 2.47,
+      "margin_by_lead": {
+        "7": 0.088,
+        "12": 0.15,
+        "24": 0.174,
+        "36": 0.204,
+        "48": 0.22
+      },
+      "test": {
+        "hours_scored": 7140,
+        "secure_exceeds_truth_share": 0.0099,
+        "raw_forecast_exceeds_truth_share": 0.5052,
+        "static_exceeds_truth_share": 0.1866,
+        "aar_exceeds_truth_share": 0.9961,
+        "secure_over_static_median": 0.951,
+        "secure_above_static_share": 0.265,
+        "secure_over_static_by_lead_median": {
+          "7": 1.028,
+          "12": 0.984,
+          "24": 0.972,
+          "36": 0.946,
+          "48": 0.933
+        }
+      }
+    },
+    "min_attack_20deg": {
+      "rating_mae_rel_by_lead": {
+        "7": 0.0238,
+        "12": 0.0315,
+        "24": 0.0486,
+        "36": 0.053,
+        "48": 0.0598
+      },
+      "rating_bias_a_mean": -5.8,
+      "persistence_mae_over_forecast_mae": 2.7,
+      "margin_by_lead": {
+        "7": 0.091,
+        "12": 0.186,
+        "24": 0.209,
+        "36": 0.244,
+        "48": 0.251
+      },
+      "test": {
+        "hours_scored": 7140,
+        "secure_exceeds_truth_share": 0.0101,
+        "raw_forecast_exceeds_truth_share": 0.5062,
+        "static_exceeds_truth_share": 0.0961,
+        "aar_exceeds_truth_share": 0.4633,
+        "secure_over_static_median": 1.043,
+        "secure_above_static_share": 0.636,
+        "secure_over_static_by_lead_median": {
+          "7": 1.162,
+          "12": 1.077,
+          "24": 1.061,
+          "36": 1.036,
+          "48": 1.028
+        }
+      }
+    },
+    "min_attack_9deg": {
+      "rating_mae_rel_by_lead": {
+        "7": 0.0221,
+        "12": 0.029,
+        "24": 0.0429,
+        "36": 0.048,
+        "48": 0.0531
+      },
+      "rating_bias_a_mean": -4.6,
+      "persistence_mae_over_forecast_mae": 2.73,
+      "margin_by_lead": {
+        "7": 0.075,
+        "12": 0.152,
+        "24": 0.172,
+        "36": 0.23,
+        "48": 0.224
+      },
+      "test": {
+        "hours_scored": 7140,
+        "secure_exceeds_truth_share": 0.0094,
+        "raw_forecast_exceeds_truth_share": 0.5015,
+        "static_exceeds_truth_share": 0.1471,
+        "aar_exceeds_truth_share": 0.9672,
+        "secure_over_static_median": 0.987,
+        "secure_above_static_share": 0.447,
+        "secure_over_static_by_lead_median": {
+          "7": 1.093,
+          "12": 1.035,
+          "24": 1.013,
+          "36": 0.972,
+          "48": 0.968
+        }
+      }
+    }
+  },
+  "station_calibrated_margin": {
+    "margin": 0.543,
+    "point_test_exceedance_share": 0.0239,
+    "line_secure_over_static_median": 0.73,
+    "line_secure_above_static_share": 0.0
+  },
+  "stations": {
+    "stations": [
+      "YND",
+      "YOW"
+    ],
+    "hours_obs": 4609,
+    "leads_1_6": {
+      "temp_bias_c": 0.215,
+      "temp_mae_c": 1.0502,
+      "wind_bias_ms": -0.5249,
+      "wind_mae_ms": 1.1575,
+      "dir_mae_deg": 24.8989
+    },
+    "leads_24_48": {
+      "temp_bias_c": 0.3288,
+      "temp_mae_c": 1.2958,
+      "wind_bias_ms": -0.5461,
+      "wind_mae_ms": 1.2193,
+      "dir_mae_deg": 28.7508
+    },
+    "point_dlr": {
+      "mae_rel_leads_1_6": 0.1246,
+      "mae_rel_leads_24_48": 0.1315,
+      "bias_rel_all": 0.0174,
+      "over_forecast_share": 0.4819
+    }
+  }
+}
