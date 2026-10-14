@@ -1,0 +1,65 @@
+# Curated conductor assumptions -- edit by hand (not generated).
+#
+# The real A41T/A42T conductor is not public. OSM gives twin-bundle phases
+# (wires=double, see config/line.yaml). We assume a typical ACSR and run one
+# size down / one size up as a sensitivity. Hydro One uses larger conductors
+# on some Ottawa lines (Hawthorne-Merivale: twin 1443 kcmil ACSR), so absolute
+# amps are indicative only; results are reported mainly as % of static rating.
+#
+# [S1] Prysmian TransPowr ACSR datasheet (US, ASTM B232):
+#      https://na.prysmian.com/sites/na.prysmian.com/files/media/documents/TransPowr%C2%AE%20ACSR%20Bare%20Overhead%20Conductor%20%28US%29.pdf
+#      AC resistances at 60 Hz; the datasheet notes they approximate core
+#      magnetization, so linerate's magnetic-effect terms are left neutral
+#      (b=1, m=0, c_max=1) in src/dlr/thermal/rating.py.
+base: drake
+sensitivity: [grosbeak, cardinal]
+conductors:
+  grosbeak:
+    code_word: Grosbeak
+    stranding: 636 kcmil 26/7
+    conductor_diameter_m: {value: 25.15e-3, source: public_doc, reference: "[S1] 0.990 in"}
+    core_diameter_m: {value: 9.27e-3, source: computed, reference: "[S1] 3 x 0.1216 in steel wire"}
+    outer_strand_diameter_m: {value: 3.973e-3, source: public_doc, reference: "[S1] 0.1564 in"}
+    aluminium_area_m2: {value: 3.2226e-4, source: public_doc, reference: "[S1] 0.4995 in2"}
+    resistance_ac_25c_ohm_per_m: {value: 8.957e-5, source: public_doc, reference: "[S1] 0.0273 ohm/kft"}
+    resistance_ac_75c_ohm_per_m: {value: 1.0696e-4, source: public_doc, reference: "[S1] 0.0326 ohm/kft"}
+  drake:
+    code_word: Drake
+    stranding: 795 kcmil 26/7
+    conductor_diameter_m: {value: 28.14e-3, source: public_doc, reference: "[S1] 1.108 in"}
+    core_diameter_m: {value: 10.36e-3, source: computed, reference: "[S1] 3 x 0.1360 in steel wire"}
+    outer_strand_diameter_m: {value: 4.442e-3, source: public_doc, reference: "[S1] 0.1749 in"}
+    aluminium_area_m2: {value: 4.0303e-4, source: public_doc, reference: "[S1] 0.6247 in2"}
+    resistance_ac_25c_ohm_per_m: {value: 7.185e-5, source: public_doc, reference: "[S1] 0.0219 ohm/kft"}
+    resistance_ac_75c_ohm_per_m: {value: 8.596e-5, source: public_doc, reference: "[S1] 0.0262 ohm/kft"}
+  cardinal:
+    code_word: Cardinal
+    stranding: 954 kcmil 54/7
+    conductor_diameter_m: {value: 30.38e-3, source: public_doc, reference: "[S1] 1.196 in"}
+    core_diameter_m: {value: 10.13e-3, source: computed, reference: "[S1] 3 x 0.1329 in steel wire"}
+    outer_strand_diameter_m: {value: 3.376e-3, source: public_doc, reference: "[S1] 0.1329 in"}
+    aluminium_area_m2: {value: 4.8329e-4, source: public_doc, reference: "[S1] 0.7491 in2"}
+    resistance_ac_25c_ohm_per_m: {value: 6.135e-5, source: public_doc, reference: "[S1] 0.0187 ohm/kft"}
+    resistance_ac_75c_ohm_per_m: {value: 7.546e-5, source: public_doc, reference: "[S1] 0.0230 ohm/kft"}
+
+emissivity:
+  value: 0.6
+  source: public_doc
+  reference: OEB East-West Tie (Ontario 230 kV double circuit, 2011) design criteria, https://www.rds.oeb.ca/CMWebDrawer/Record/315698/File/document
+absorptivity:
+  value: 0.8
+  source: public_doc
+  reference: same OEB East-West Tie design criteria
+max_operating_temp_c:
+  value: 93.0
+  source: public_doc
+  reference: "Ontario continuous rating at 93 C (or sag temperature if lower): Hydro One IMO-FORM-1538 v9.0, IESO CAA 2017-623"
+# 75 C: a sag-limited older design ("or the sag temperature if lower").
+# 127 C: Ontario long-term emergency (LTE, <= 50 h/yr) rating temperature, the
+# limit a circuit must respect after a contingency ([S6] IMO-FORM-1538, IESO CAA
+# 2017-623) -- used for the N-1 comparison with PQ.AT flows.
+max_operating_temp_sensitivity_c: [75.0, 127.0]
+conductor_height_m:
+  value: 20.0
+  source: industry_typical
+  reference: "Hydro One 230 kV double-circuit towers are 30-60 m tall (St. Clair ESR, Lake Superior Link fact sheet), 7.3 m min. road clearance (OEB E-W Tie); mean phase height after sag assumed ~20 m"

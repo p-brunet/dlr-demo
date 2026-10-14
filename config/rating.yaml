@@ -1,0 +1,60 @@
+# Curated rating assumptions -- edit by hand (not generated).
+#
+# Static (seasonal) ratings follow published Ontario practice for continuous
+# ratings; the ambient-adjusted rating (AAR) keeps the same wind and replaces
+# the seasonal ambient by the hourly HRDPS temperature with clear-sky sun at
+# the actual hour (FERC Order 881 style; not mandated in Ontario).
+#
+# [S6] Hydro One IMO-FORM-1538 v9.0 (SIA load form): https://www.hydroone.com/businessservices_/Documents/IMO-FORM-1538-SIAA-Load%20(2).pdf
+# [S7] IESO CAA 2017-623 final report: https://www.ieso.ca/-/media/Files/IESO/caa/CAA_2017-623_Final_Report.pdf
+# [S9] OEB East-West Tie design criteria: https://www.rds.oeb.ca/CMWebDrawer/Record/315698/File/document
+summer_months: [5, 6, 7, 8, 9, 10] # assumption; the whole HRDPS archive (Jul-Oct) is summer
+summer:
+  ambient_c:
+    value: 35.0
+    source: public_doc
+    reference: "[S6] 35 C south of Barrie (30 C north); Ottawa is ambiguous, 35 C is the conservative reading"
+  wind_speed_ms:
+    value: 1.11
+    source: public_doc
+    reference: "[S6] [S7] 0-4 km/h; 4 km/h used"
+  wind_angle_deg:
+    value: 90.0
+    source: industry_typical
+    reference: not stated by Hydro One/IESO; perpendicular wind as in PJM and IEEE 738 practice
+  solar_date: "2026-06-21"
+winter:
+  ambient_c:
+    value: 10.0
+    source: public_doc
+    reference: "[S6] [S7] [S9] winter 10 C"
+  wind_speed_ms:
+    value: 1.11
+    source: public_doc
+    reference: "[S6] [S7] 0-4 km/h; 4 km/h used"
+  wind_angle_deg:
+    value: 90.0
+    source: industry_typical
+    reference: perpendicular wind as in PJM and IEEE 738 practice
+  solar_date: "2026-12-21"
+summer_ambient_sensitivity_c: [30.0]
+ground_albedo:
+  value: 0.15
+  source: industry_typical
+  reference: CIGRE TB 601 typical rural/vegetated ground (Example B uses 0.15)
+sheltering_max_reduction:
+  value: 0.3
+  source: industry_typical
+  reference: heuristic -- a span fully lined with tall canopy sees at most 30 % less wind than the open-terrain value; always reported with and without sheltering
+# Hourly 2.5 km wind direction is never exactly parallel to a 300 m span (the
+# direction fluctuates within the hour); these sensitivities floor the angle of
+# attack. 20 deg: heuristic. 9 deg: calibrated with minute observations at
+# Ottawa CDA RCS (`dlr verify-wind`, data/processed/verification/
+# wind_summary.json, Sep 15 - Oct 13 2026) -- the floor at which the
+# hourly-vector line rating matches the minute-resolved one in median.
+# Reported as sensitivities; the base case keeps exact directions.
+min_attack_angle_sensitivity_deg: [20.0, 9.0]
+min_wind_speed_ms:
+  value: 0.0
+  source: computed
+  reference: no floor; natural convection in CIGRE TB 601 covers calm conditions

@@ -1,0 +1,96 @@
+{
+  "period": [
+    "2026-07-09 01:00:00",
+    "2026-10-14 12:00:00"
+  ],
+  "hours": 2340,
+  "conductor": "2 x Drake per phase",
+  "max_operating_temp_c": 93.0,
+  "static_line_a": 2134,
+  "static_line_mw_per_circuit": 850,
+  "static_line_winter_a": 2715,
+  "static_line_winter_mw_per_circuit": 1081,
+  "static_span_range_a": [
+    2134,
+    2158
+  ],
+  "aar_over_static": {
+    "median": 1.248,
+    "p5": 1.095,
+    "min": 1.0
+  },
+  "dlr_over_static": {
+    "median": 1.077,
+    "p5": 0.82,
+    "p95": 1.227,
+    "share_above_1": 0.697,
+    "share_above_1_2": 0.105
+  },
+  "dlr_no_sheltering_over_static": {
+    "median": 1.097,
+    "p5": 0.828,
+    "share_below_1": 0.267
+  },
+  "dlr_below_static": {
+    "share_of_hours": 0.303,
+    "dominant_driver_share": {
+      "wind_angle": 0.908,
+      "wind_speed": 0.066,
+      "ambient": 0.025
+    },
+    "median_wind_at_limiting_span_ms": 1.4
+  },
+  "aar_vs_dlr": {
+    "share_aar_above_dlr": 0.989
+  },
+  "n_minus_1_pq_at": {
+    "hours_with_flow": 2184,
+    "static_lte_mw_single_circuit": 1092,
+    "dlr_lte_mw_single_circuit_median": 1089,
+    "share_flow_above_static_lte": 0.554,
+    "share_flow_above_dlr_lte": 0.533,
+    "share_covered_by_dlr_not_static": 0.049,
+    "flow_abs_median_mw": 1165
+  },
+  "limiting_span_top5": {
+    "S076": 0.089,
+    "S081": 0.065,
+    "S065": 0.058,
+    "S088": 0.047,
+    "S103": 0.045
+  },
+  "spans_ever_limiting": 95,
+  "sensitivity": {
+    "grosbeak": {
+      "static_a": 1865,
+      "dlr_over_static_median": 1.068,
+      "dlr_below_static_share": 0.317
+    },
+    "cardinal": {
+      "static_a": 2310,
+      "dlr_over_static_median": 1.08,
+      "dlr_below_static_share": 0.297
+    },
+    "mot75": {
+      "static_a": 1683,
+      "dlr_over_static_median": 1.198,
+      "dlr_below_static_share": 0.162
+    },
+    "mot127": {
+      "static_a": 2740,
+      "dlr_over_static_median": 0.993,
+      "dlr_below_static_share": 0.522
+    },
+    "static_ambient_30c": {
+      "static_a": 2243
+    },
+    "min_attack_angle_20deg": {
+      "dlr_over_static_median": 1.208,
+      "dlr_below_static_share": 0.14
+    },
+    "min_attack_angle_9deg": {
+      "dlr_over_static_median": 1.121,
+      "dlr_below_static_share": 0.225
+    }
+  }
+}
