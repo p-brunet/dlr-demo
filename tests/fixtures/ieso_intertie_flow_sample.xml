@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<IMODocument docID="IntertieScheduleFlow" xmlns="http://www.theIMO.com/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<IMODocHeader>
+<DocTitle>Intertie Schedule and Flow Report</DocTitle>
+<DocRevision>2</DocRevision>
+<CreatedAt>2026-10-11T00:31:06</CreatedAt>
+</IMODocHeader>
+<IMODocBody>
+<Date>2026-10-10</Date>
+<IntertieZone>
+<IntertieZoneName>MANITOBA</IntertieZoneName>
+<Schedules>
+<Schedule><Hour>1</Hour><Import>123</Import><Export>0</Export></Schedule>
+</Schedules>
+<Actuals>
+<Actual><Hour>1</Hour><Interval>1</Interval><Flow>-124.6</Flow></Actual>
+</Actuals>
+</IntertieZone>
+<IntertieZone>
+<IntertieZoneName>PQ.AT</IntertieZoneName>
+<Schedules>
+<Schedule><Hour>1</Hour><Import>0</Import><Export>1238</Export></Schedule>
+<Schedule><Hour>2</Hour><Import>9</Import><Export>1229</Export></Schedule>
+</Schedules>
+<Actuals>
+<Actual><Hour>1</Hour><Interval>1</Interval><Flow>1234.5</Flow></Actual>
+<Actual><Hour>1</Hour><Interval>12</Interval><Flow>1235.1</Flow></Actual>
+<Actual><Hour>2</Hour><Interval>1</Interval><Flow></Flow></Actual>
+</Actuals>
+</IntertieZone>
+<Totals>
+<Actuals>
+<Actual><Hour>1</Hour><Interval>1</Interval><Flow>3240.4</Flow></Actual>
+</Actuals>
+</Totals>
+</IMODocBody>
+</IMODocument>

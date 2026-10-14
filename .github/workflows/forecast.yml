@@ -1,0 +1,95 @@
+# Continuous forecast: check every hour for a new HRDPS run on dynamical.org;
+# when there is one, recompute ratings, verification and the live 48 h
+# forecast (`dlr refresh`), build the site and deploy it to GitHub Pages.
+# Pushes that change the code or the page, and manual runs, rebuild and
+# redeploy even without a new run.
+#
+# One-time setup: repository Settings -> Pages -> Source: "GitHub Actions".
+#
+# State between runs (the HRDPS corridor extract and today's operational
+# margins) lives in the Actions cache, not in git. If the cache is lost, the
+# next run re-extracts the whole archive (~30-60 min) and carries on.
+# site/data/, site/geolibre.html and site/dlr.geolibre.json are generated here
+# and never committed.
+name: Forecast and publish
+
+on:
+  schedule:
+    - cron: "25 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - "site/index.html"
+      - "src/**"
+      - "config/**"
+      - "scripts/build_geolibre.py"
+      - ".github/workflows/forecast.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: forecast
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      publish: ${{ steps.refresh.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.11.26"
+          enable-cache: true
+
+      - name: Restore forecast state
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/interim/hrdps_corridor.zarr
+            data/interim/margins_operational.json
+          key: forecast-state-${{ github.run_id }}
+          restore-keys: forecast-state-
+
+      - name: Refresh (new HRDPS runs only on schedule)
+        id: refresh
+        run: uv run --frozen dlr refresh ${{ github.event_name != 'schedule' && '--force' || '' }}
+
+      - name: Save forecast state
+        if: steps.refresh.outputs.publish == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data/interim/hrdps_corridor.zarr
+            data/interim/margins_operational.json
+          key: forecast-state-${{ github.run_id }}
+
+      - name: GeoLibre project
+        if: steps.refresh.outputs.publish == 'true'
+        run: uv run scripts/build_geolibre.py site
+
+      - name: Upload site
+        if: steps.refresh.outputs.publish == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - id: deployment
+        uses: actions/deploy-pages@v4

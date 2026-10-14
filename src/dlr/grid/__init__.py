@@ -1,1 +1,1 @@
-# IESO intertie flow overlay. Optional, Milestone 8.
+"""IESO grid context: intertie schedule and flow archive."""
