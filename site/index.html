@@ -205,8 +205,9 @@ footer a { color: var(--text-secondary); }
 "use strict";
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const fmtUTC = new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" });
-const fmtLocal = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
-const fmtLocalLong = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", weekday: "short", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+const fmtLocal = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+const fmtLocalLong = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", weekday: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+const fmtLocalDate = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
 const RATIO_STOPS = [[0.7, "#a62a2a"], [0.85, "#e66767"], [1.0, "#9a9993"], [1.15, "#3987e5"], [1.35, "#104281"]];
 const BLUE_STOPS = (lo, hi) => [[lo, "#86b6ef"], [(lo + hi) / 2, "#2a78d6"], [hi, "#0d366b"]];
 const SUMMER_MONTHS = [5, 6, 7, 8, 9, 10];
@@ -259,7 +260,7 @@ const spanStaticA = (p, t) => (isSummer(t) ? p.static_a : p.static_winter_a);
 const toMW = (amps) => (amps * Math.sqrt(3) * M.line.voltage_kv) / 1000;
 function ago(date) {
   const h = (Date.now() - date) / 3600e3;
-  return h < 1 ? `${Math.round(h * 60)} min ago` : `${h.toFixed(h < 10 ? 1 : 0)} h ago`;
+  return h < 1 ? `${Math.round(h * 60)} min ago` : `${Math.round(h)} h ago`;
 }
 
 /* ---------- views ---------- */
@@ -299,7 +300,7 @@ function renderForecastStory() {
   const now = FC.nowIdx, m = FC.margin.filter((v) => v != null);
   const ratioNow = FC.secure_mw[now] / FC.static_mw[now];
   el.innerHTML = `
-    <p class="issued">Forecast from the Environment Canada HRDPS run of <b>${fmtUTC.format(FC.init)} UTC</b>,
+    <p class="issued">Forecast from the Environment Canada HRDPS run of <b>${fmtUTC.format(FC.init)} UTC</b> (${fmtLocalDate.format(FC.init)}),
       published here ${ago(new Date(FC.generated_utc))}. A new run arrives about every 6 hours.</p>
     ${FC.expired ? `<p class="notice">⚠ This forecast has run out: no newer weather run has been published yet.</p>`
       : stale ? `<p class="notice">⚠ Older than usual: the weather feed may be delayed.</p>` : ""}
@@ -732,7 +733,7 @@ function drawChart() {
     const rows = [["--static", "Static", D.static_mw[i]], ...active.map((s) => [s.color, s.label, s.data[i]])]
       .map(([c, l, v]) => `<div class="row"><span class="key" style="background:${css(c)}"></span>${l}: <b>${v == null ? "n/a" : Math.round(v) + " MW"}</b></div>`).join("");
     const lead = state.view === "forecast" ? ` · +${FC.lead_h[i]} h` : "";
-    tip.innerHTML = `<div>${fmtUTC.format(D.times[i])} UTC${lead}</div>${rows}`;
+    tip.innerHTML = `<div>${fmtUTC.format(D.times[i])} UTC (${fmtLocal.format(D.times[i])})${lead}</div>${rows}`;
     tip.style.display = "block";
     const wrap = svg.parentElement.getBoundingClientRect(), r = svg.getBoundingClientRect();
     const left = r.left - wrap.left + (x(i) / W) * r.width + 12;
