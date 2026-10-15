@@ -8,7 +8,7 @@
 
 | Workflow | When | What it does |
 |---|---|---|
-| `.github/workflows/forecast.yml` — *Forecast and publish* | every hour at :25; on pushes to `src/`, `config/`, `site/index.html`; by hand | `dlr refresh`. If a new HRDPS run exists (or the run is forced), it rebuilds `site/` and deploys it to Pages; otherwise it exits in about a minute |
+| `.github/workflows/forecast.yml` — *Forecast and publish* | every 15 min (:07, :22, :37, :52); on pushes to `src/`, `config/`, `site/index.html`; by hand | `dlr refresh`. If a new HRDPS run exists (or the run is forced), it rebuilds `site/` and deploys it to Pages; otherwise it exits in about a minute |
 | `.github/workflows/open-data-archive.yml` — *Daily open-data archive* | daily 09:17 UTC; by hand | Commits new days of IESO intertie flows and SWOB minute wind; both sources only keep a rolling window |
 
 ## Latency: how fresh the forecast is
@@ -66,7 +66,7 @@ GeoLibre build (`scripts/build_geolibre.py`).
   To preview locally: `dlr refresh --force` (or `dlr export`), then
   `dlr publish`.
 - **Cost:** free on a public repo (Actions minutes and Pages). About 4 heavy
-  runs a day, plus 20 one-minute checks.
+  runs a day, plus about 90 checks of under a minute.
 
 ## Monitoring and failure modes
 
@@ -77,9 +77,11 @@ GeoLibre build (`scripts/build_geolibre.py`).
   edited the workflow when a scheduled run fails.
 - dynamical.org late or down: no new run, so no deploy. The page keeps the
   last forecast with its age shown.
-- GitHub can delay scheduled runs by tens of minutes. It also disables
-  schedules after 60 days without repository activity; the daily archive
-  commits prevent that.
+- GitHub can delay scheduled runs by tens of minutes, or drop them: on
+  2026-10-15 only 3 of 14 hourly checks ran, hence a check every 15 min.
+  If the page still lags, start the workflow from an outside scheduler.
+  GitHub also disables schedules after 60 days without repository activity;
+  the daily archive commits prevent that.
 
 ## Limits
 

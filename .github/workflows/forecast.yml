@@ -1,4 +1,4 @@
-# Continuous forecast: check every hour for a new HRDPS run on dynamical.org;
+# Continuous forecast: check every 15 min for a new HRDPS run on dynamical.org;
 # when there is one, recompute ratings, verification and the live 48 h
 # forecast (`dlr refresh`), build the site and deploy it to GitHub Pages.
 # Pushes that change the code or the page, and manual runs, rebuild and
@@ -15,7 +15,9 @@ name: Forecast and publish
 
 on:
   schedule:
-    - cron: "25 * * * *"
+    # Off the hour and denser than needed: GitHub drops scheduled runs under
+    # load (on 2026-10-15 only 3 of 14 hourly checks ran).
+    - cron: "7,22,37,52 * * * *"
   push:
     branches: [main]
     paths:
