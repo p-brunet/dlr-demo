@@ -208,6 +208,7 @@ const fmtUTC = new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", dateStyle: "m
 const fmtLocal = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
 const fmtLocalLong = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", weekday: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
 const fmtLocalDate = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+const fmtLocalAxis = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", hour: "numeric", timeZoneName: "short" });
 const RATIO_STOPS = [[0.7, "#a62a2a"], [0.85, "#e66767"], [1.0, "#9a9993"], [1.15, "#3987e5"], [1.35, "#104281"]];
 const BLUE_STOPS = (lo, hi) => [[lo, "#86b6ef"], [(lo + hi) / 2, "#2a78d6"], [hi, "#0d366b"]];
 const SUMMER_MONTHS = [5, 6, 7, 8, 9, 10];
@@ -664,7 +665,7 @@ function polyline(data, i0, i1, x, y) {
 function drawChart() {
   if (!D) return;
   const svg = document.getElementById("chart");
-  const W = svg.clientWidth || 800, Ht = svg.clientHeight || 200, pad = { l: 44, r: 10, t: 18, b: 22 };
+  const W = svg.clientWidth || 800, Ht = svg.clientHeight || 200, pad = { l: 44, r: 10, t: 18, b: state.view === "forecast" ? 34 : 22 };
   let i0 = 0, i1 = D.n - 1;
   if (state.view === "history" && state.window === "7") {
     i0 = Math.max(0, state.hour - 84); i1 = Math.min(D.n - 1, i0 + 168); i0 = Math.max(0, i1 - 168);
@@ -690,11 +691,13 @@ function drawChart() {
   }
   out += `<text x="${pad.l - 6}" y="10" text-anchor="end">MW</text>`;
   const days = new Set();
+  const every = [6, 12, 24].find((h) => x(i0 + h) - x(i0) >= 80) ?? 24;  // forecast tick spacing (h), wide enough for both rows
   for (let i = i0; i <= i1; i++) {
     const t = D.times[i];
     if (state.view === "forecast") {
-      if (t.getUTCHours() % 6 === 0 && x(i) < W - pad.r - 30)
-        out += `<text x="${x(i)}" y="${Ht - 6}" text-anchor="middle">${t.toISOString().slice(5, 10)} ${String(t.getUTCHours()).padStart(2, "0")}Z</text>`;
+      if (t.getUTCHours() % every === 0 && x(i) < W - pad.r - 30)
+        out += `<text x="${x(i)}" y="${Ht - 20}" text-anchor="middle">${t.toISOString().slice(5, 10)} ${String(t.getUTCHours()).padStart(2, "0")}Z</text>`
+          + `<text x="${x(i)}" y="${Ht - 6}" text-anchor="middle">${fmtLocalAxis.format(t)}</text>`;
     } else if (t.getUTCHours() === 0) {
       const step = (i1 - i0) > 24 * 20 ? 7 : 1;
       const dayNum = Math.floor(t / 864e5);
