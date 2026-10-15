@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Line Rating Explorer</title>
 <meta name="description" content="Sensorless dynamic line rating of the A41T/A42T Ontario–Québec tie from open weather, terrain and line data.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 14 L8 2 L14 14 M5 9 H11' stroke='%232a78d6' stroke-width='1.8' fill='none'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M16 4.5 10.5 27.5M16 4.5l5.5 23M6.5 10.5h19M9 16.5h14M6.5 10.5v3.5M25.5 10.5v3.5M9 16.5v3.5M23 16.5v3.5' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <style>
 :root {
@@ -73,11 +73,12 @@ body {
   background: var(--surface-0);
   color: var(--text-primary);
   font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: grid; grid-template-rows: auto minmax(0, 1fr);
 }
 header { padding: 14px 20px 10px; border-bottom: 1px solid var(--border); background: var(--surface-1); }
 header h1 { margin: 0; font-size: 18px; font-weight: 650; }
 header p { margin: 2px 0 0; color: var(--text-secondary); font-size: 13px; }
-.layout { display: grid; grid-template-columns: 340px 1fr; height: calc(100vh - 62px); }
+.layout { display: grid; grid-template-columns: 340px 1fr; }
 aside { overflow-y: auto; background: var(--surface-1); border-right: 1px solid var(--border); padding: 14px 16px 24px; }
 main { display: grid; grid-template-rows: minmax(260px, 1fr) auto; min-width: 0; }
 #map { min-height: 260px; }
@@ -139,14 +140,18 @@ main { display: grid; grid-template-rows: minmax(260px, 1fr) auto; min-width: 0;
 .maplibregl-popup-content { background: var(--surface-1); color: var(--text-primary); font: 12.5px/1.4 system-ui, sans-serif; }
 .maplibregl-popup-tip { display: none; }
 footer { font-size: 11.5px; color: var(--text-muted); padding: 10px 0 0; }
+footer p { margin: 0 0 6px; }
 footer a { color: var(--text-secondary); }
+footer summary { cursor: pointer; color: var(--text-secondary); }
+footer details[open] summary { margin-bottom: 6px; }
 .table-link { font-size: 12px; color: var(--text-secondary); }
 .viewseg { display: flex; margin-bottom: 12px; }
 .viewseg button { flex: 1; padding: 7px 10px; font-size: 13.5px; }
 .issued { font-size: 12.5px; color: var(--text-secondary); }
 .notice { border-left: 3px solid #fab219; background: var(--surface-2); padding: 6px 10px; border-radius: 4px; }
 @media (max-width: 860px) {
-  .layout { grid-template-columns: 1fr; height: auto; }
+  body { display: block; }
+  .layout { grid-template-columns: 1fr; }
   aside { border-right: 0; border-bottom: 1px solid var(--border); }
   main { grid-template-rows: 380px auto; }
   #when { min-width: 0; flex-basis: 100%; }
@@ -156,7 +161,7 @@ footer a { color: var(--text-secondary); }
 <body>
 <header>
   <h1>How much more could this line carry?</h1>
-  <p>Weather-based (dynamic) rating forecast for the A41T/A42T 230 kV tie, Hawthorne TS (ON) ↔ Poste de l'Outaouais (QC), from open data only — updated with every new Environment Canada weather run.</p>
+  <p>48-hour weather-based rating forecast for the 230 kV Ottawa–Outaouais line (Ontario ↔ Québec). Open data, updated every 6 hours.</p>
 </header>
 <div class="layout">
   <aside>
@@ -301,8 +306,7 @@ function renderForecastStory() {
   const now = FC.nowIdx, m = FC.margin.filter((v) => v != null);
   const ratioNow = FC.secure_mw[now] / FC.static_mw[now];
   el.innerHTML = `
-    <p class="issued">Forecast from the Environment Canada HRDPS run of <b>${fmtUTC.format(FC.init)} UTC</b> (${fmtLocalDate.format(FC.init)}),
-      published here ${ago(new Date(FC.generated_utc))}. A new run arrives about every 6 hours.</p>
+    <p class="issued">Environment Canada run of <b>${fmtLocalDate.format(FC.init)}</b> · <span style="white-space:nowrap">updated ${ago(new Date(FC.generated_utc))}</span></p>
     ${FC.expired ? `<p class="notice">⚠ This forecast has run out: no newer weather run has been published yet.</p>`
       : stale ? `<p class="notice">⚠ Older than usual: the weather feed may be delayed.</p>` : ""}
     ${kpis([
@@ -311,40 +315,33 @@ function renderForecastStory() {
       ["Lowest, next 24 h", minIdx < 0 ? "n/a" : `${FC.secure_mw[minIdx]} MW`],
       ["Hours below static ahead", `${below} of ${ahead.length}`],
     ])}
-    ${minIdx < 0 ? "" : `<p>The tightest hour in the next day is <b>${fmtLocalLong.format(FC.times[minIdx])}</b>
+    ${minIdx < 0 ? "" : `<p>Tightest hour: <b>${fmtLocalLong.format(FC.times[minIdx])}</b>
       (${(FC.secure_mw[minIdx] / FC.static_mw[minIdx]).toFixed(2)} × static).</p>`}
-    <p><span style="color:var(--series-dlr)">Forecast DLR</span> is the expected rating of the weakest span from the
-      forecast weather; <span style="color:var(--series-secure)">secure DLR</span> subtracts a safety margin
-      (${Math.round(100 * Math.min(...m))}–${Math.round(100 * Math.max(...m))} %, growing with lead time) so it should be
-      exceeded by the real rating in only ${Math.round(100 * (1 - FC.confidence))} % of hours.
-      The margins are refit daily on ${FC.margins_n_pairs.toLocaleString("en-CA")} verified forecast hours
-      (last fit ${FC.margins_fitted_on}).</p>
-    <p>Drag the slider or press Play to step through the next ${FC.n} hours; hover a span for its forecast wind and
-      its angle to the wire. Switch to <b>History &amp; story</b> to see how the method performed since July.</p>`;
+    <p><span style="color:var(--series-secure)">Secure</span> = <span style="color:var(--series-dlr)">forecast</span>
+      minus a safety margin (${Math.round(100 * Math.min(...m))}–${Math.round(100 * Math.max(...m))} %), so the real rating
+      falls below it only ${Math.round(100 * (1 - FC.confidence))} % of the time.</p>
+    <p>Hover a span for its wind.</p>`;
 }
 
 function chapters() {
   const H = HIST, r = M.ratings, v = M.verification, base = v.variants.base;
   return [
     { title: "The line", sub: "A 34 km tie under converter-limited flow", mode: "ratio", hour: H.peakFlowIdx,
-      html: `<p>A41T/A42T carries the Ontario–Québec HVDC tie (two 230 kV circuits, ${M.line.towers} towers, ${M.line.spans} spans) to Hydro-Québec's 1,250 MW Outaouais converter. Over the period the tie ran above 1,200 MW for long stretches.</p>
-             <p>With both circuits in service the <b>converter</b>, not the line, caps the transfer. Thermal headroom matters when one circuit is out.</p>
+      html: `<p>A41T/A42T (two 230 kV circuits, ${M.line.towers} towers) feeds Hydro-Québec's 1,250 MW Outaouais converter. With both circuits in service the <b>converter</b>, not the line, caps the flow; the line's headroom matters when one circuit is out.</p>
              ${kpis([["Static rating / circuit (summer)", `${r.static_line_mw_per_circuit} MW`], ["Spans", M.line.spans]])}` },
     { title: "Where wind reaches the wires", sub: "Terrain sheltering from LiDAR", mode: "exposure", hour: null,
-      html: `<p>Trees and buildings 20–60 m from each span, measured in NRCan's 1 m LiDAR elevation models, shelter the conductors. Darker spans are more exposed (open fields, the river crossing).</p>` },
+      html: `<p>Trees and buildings 20–60 m from each span (NRCan 1 m LiDAR) shelter the wires. Darker spans are more exposed: open fields, the river crossing.</p>` },
     { title: "The weakest span keeps moving", sub: `${r.spans_ever_limiting} of ${M.line.spans} spans limit the line at some hour`, mode: "limiting", hour: null,
-      html: `<p>A line is only as strong as its weakest span. Because the spans point in every direction, a wind that cools most of the line runs <i>along</i> a few spans and barely cools them.</p>
-             <p>${r.spans_ever_limiting} different spans are the bottleneck at some hour. Wind angle explains ${Math.round(100 * (r.dlr_below_static.dominant_driver_share.wind_angle || 0))} % of the hours when the weather-based rating falls below static.</p>
-             <p>Switch on <b>≋ Wind</b> to see the flow, and hover a span for the wind's angle to its wire.</p>` },
+      html: `<p>A line is only as strong as its weakest span. A wind that cools most of the line runs <i>along</i> a few spans, so ${r.spans_ever_limiting} different spans are the bottleneck at some hour; wind angle explains ${Math.round(100 * (r.dlr_below_static.dominant_driver_share.wind_angle || 0))} % of the hours below static.</p>
+             <p><b>≋ Wind</b> shows or hides the flow; hover a span for the wind's angle to its wire.</p>` },
     { title: "The worst hour", sub: "Calm, hot, sun on the wires", mode: "ratio", hour: H.minIdx,
       html: `<p>At this hour the weather-based rating falls to <b>${pct(H.dlr_mw[H.minIdx] / H.static_mw[H.minIdx] - 1)}</b> versus the static rating, which assumes a steady 4 km/h crosswind on every span.</p>
              ${kpis([["Below static", `${Math.round(100 * r.dlr_below_static.share_of_hours)} % of hours`], ["Median gain", pct(r.dlr_over_static.median - 1)]])}` },
     { title: "The best hour", sub: "Cool and windy", mode: "ratio", hour: H.maxIdx,
       html: `<p>When it is cool and windy the same conductors could carry <b>${pct(H.dlr_mw[H.maxIdx] / H.static_mw[H.maxIdx] - 1)}</b> more than their static rating.</p>
-             <p>How far to trust the hourly wind direction is the biggest modelling choice. Minute-by-minute wind at Ottawa's Experimental Farm shows the direction swings within each hour, which cools the wire like a ~9° minimum angle of attack: the median gain moves from ${pct(r.dlr_over_static.median - 1)} to ${pct(r.sensitivity.min_attack_angle_9deg.dlr_over_static_median - 1)} (a 20° floor would give ${pct(r.sensitivity.min_attack_angle_20deg.dlr_over_static_median - 1)}).</p>` },
+             <p>Wind that swings direction within the hour lifts the median gain from ${pct(r.dlr_over_static.median - 1)} to ${pct(r.sensitivity.min_attack_angle_9deg.dlr_over_static_median - 1)}.</p>` },
     { title: "A day ahead, with a safety margin", sub: "Forecast skill and the 98 % secure rating", mode: "ratio", hour: Math.min(H.n - 1, H.testStartIdx + 24 * 10),
       html: `<p>HRDPS forecasts the rating within ${Math.round(100 * base.rating_mae_rel_by_lead[24])} % at 24 h (vs. ${Math.round(100 * base.rating_mae_rel_by_lead[7])} % at 7 h). A ${Math.round(100 * base.margin_by_lead[24])} % margin keeps the day-ahead <span style="color:var(--series-secure)">secure rating</span> above the truth in only ${(100 * base.test.secure_exceeds_truth_share).toFixed(1)} % of test hours.</p>
-             <p>Checked against minute-by-minute wind at a real station, a virtual copy of the line needs a similar margin (about 16 %).</p>
              ${kpis([["Static above truth", `${Math.round(100 * base.test.static_exceeds_truth_share)} % of hours`], ["Secure above truth", `${(100 * base.test.secure_exceeds_truth_share).toFixed(1)} %`]])}` },
   ];
 }
@@ -379,9 +376,12 @@ function showChapter(i) {
 function buildCredits() {
   const a = M.attributions;
   document.getElementById("credits").innerHTML =
-    `<p><b>Assumptions:</b> ${M.assumptions.conductor}, ${M.assumptions.max_operating_temp_c} °C, CIGRE TB 601 (linerate). Static: ${M.assumptions.static}. ${M.assumptions.note}</p>
-     <p>Line ${a.line_towers_spans}. Weather: ${a.weather_forecast}. Stations: ${a.station_observations} Terrain: ${a.terrain}. Flows: IESO public reports. Basemap: ${a.basemap}.</p>
-     <p><a href="${M.repository}">Code and method</a> · <a href="data/manifest.json">manifest</a> · data generated ${M.generated_utc.slice(0, 16).replace("T", " ")} UTC</p>`;
+    `<p>Indicative only: typical conductor and assumptions, not the operator's. Data: Environment Canada, NRCan, OpenStreetMap, IESO · <a href="${M.repository}">Code on GitHub</a></p>
+     <details><summary>Assumptions &amp; licences</summary>
+       <p>${M.assumptions.conductor}, ${M.assumptions.max_operating_temp_c} °C, CIGRE TB 601 (linerate). Static: ${M.assumptions.static}. ${M.assumptions.note}</p>
+       <p>Line ${a.line_towers_spans}. Weather: ${a.weather_forecast}. Stations: ${a.station_observations} Terrain: ${a.terrain}. Flows: IESO public reports. Basemap: ${a.basemap}.</p>
+       <p><a href="data/manifest.json">Manifest</a> · data generated ${M.generated_utc.slice(0, 16).replace("T", " ")} UTC</p>
+     </details>`;
 }
 
 /* ---------- map ---------- */
